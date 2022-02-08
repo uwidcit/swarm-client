@@ -1,6 +1,8 @@
 <template>
   <q-page class="q-pa-sm">
 
+    <post-board/>
+
     <card-social icon_position="left"/>
 
     <card-charts/>
@@ -26,14 +28,15 @@ import {defineComponent,defineAsyncComponent} from 'vue'
 export default defineComponent({
   name: 'PageIndex',
   components: {
-    CardSocial: defineAsyncComponent(() => import('components/cards/CardSocial')),
-    CardCharts: defineAsyncComponent(() => import('components/cards/CardCharts')),
-    // CardCharts: () => import('components/cards/CardCharts'),
-    TabSocial: defineAsyncComponent(() => import('components/tabs/TabSocial')),
-    CardWithImage: defineAsyncComponent(() => import('components/cards/CardWithImage')),
-    CardTimeLine: defineAsyncComponent(() => import('components/cards/CardTimeLine')),
-    TodoList: defineAsyncComponent(() => import('components/list/TodoList')),
-    TableVisits: defineAsyncComponent(() => import('components/tables/TableVisits')),
+  // CardSocial: defineAsyncComponent(() => import('components/cards/CardSocial')),
+  // CardCharts: defineAsyncComponent(() => import('components/cards/CardCharts')),
+  // CardCharts: () => import('components/cards/CardCharts'),
+  //  TabSocial: defineAsyncComponent(() => import('components/tabs/TabSocial')),
+  //  CardWithImage: defineAsyncComponent(() => import('components/cards/CardWithImage')),
+  //  CardTimeLine: defineAsyncComponent(() => import('components/cards/CardTimeLine')),
+  //  TodoList: defineAsyncComponent(() => import('components/list/TodoList')),
+  //  TableVisits: defineAsyncComponent(() => import('components/tables/TableVisits')),
+    PostBoard: defineAsyncComponent(() => import('components/PostBoard')),
   },
   setup() {
     return {

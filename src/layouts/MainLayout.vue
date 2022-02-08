@@ -1,28 +1,23 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <q-header elevated>
-      <q-toolbar>
-        <q-btn
-          flat
-          dense
-          round
-          @click="toggleLeftDrawer"
-          icon="menu"
-          aria-label="Menu"
-        />
-        <q-toolbar-title>
-          Quasar App
-        </q-toolbar-title>
-        <q-space/>
-        <div class="q-gutter-sm row items-center no-wrap">
-          <q-btn round dense flat color="white" :icon="$q.fullscreen.isActive ? 'fullscreen_exit' : 'fullscreen'"
-                 @click="$q.fullscreen.toggle()"
-                 v-if="$q.screen.gt.sm">
-          </q-btn>
-          <q-btn round dense flat color="white" icon="fab fa-github" type="a" href="https://github.com/pratik227/quasar-admin" target="_blank">
-          </q-btn>
-          <q-btn round dense flat icon="fas fa-heart" style="color:#9d4182 !important;" type="a" href="https://github.com/sponsors/pratik227" target="_blank">
-          </q-btn>
+    <q-header elevated >
+      <q-toolbar class="glossy">
+
+      <div class="q-gutter-y-md column" > 
+      <q-input filled bottom-slots v-model="text" label="Search board"  color="pink" style="max-width: 600px">         
+        <template v-slot:prepend>           
+          <q-icon name="search" />         
+        </template>         
+        <template v-slot:append>           
+          <q-icon name="close" @click="text = ''" class="cursor-pointer" />         
+          </template>
+      </q-input>
+     </div>
+     
+     <q-space/>
+
+      <div class="q-gutter-sm row items-center no-wrap ">
+         
           <q-btn round dense flat color="white" icon="notifications">
             <q-badge color="red" text-color="white" floating>
               5
@@ -37,6 +32,7 @@
                 </q-card>
               </q-list>
             </q-menu>
+
           </q-btn>
           <q-btn round flat>
             <q-avatar size="26px">
@@ -54,105 +50,145 @@
       class="bg-primary text-white"
     >
       <q-list>
+         <q-item to="/" active-class="q-item-no-link-highlighting">
+          <q-item-section avatar>
+            <q-icon name="menu"/>
+          </q-item-section>
+          <q-item-section>
+            <q-item-label><strong>SWARNET</strong></q-item-label>
+          </q-item-section>
+        </q-item>
+
+        <q-separator color="orange" inset />
+
         <q-item to="/" active-class="q-item-no-link-highlighting">
           <q-item-section avatar>
-            <q-icon name="dashboard"/>
+            <q-icon name="fas fa-home"/>
           </q-item-section>
           <q-item-section>
-            <q-item-label>Dashboard</q-item-label>
+            <q-item-label>Post Board</q-item-label>
           </q-item-section>
         </q-item>
+
+        <q-expansion-item 
+          icon="fas fa-hand-holding-medical"
+          label="Request Emergency Assistance">
+
+        <q-list class="q-pl-lg">  
         <q-item to="/Dashboard2" active-class="q-item-no-link-highlighting">
           <q-item-section avatar>
-            <q-icon name="dashboard"/>
+            <q-icon name="local_police"/>
           </q-item-section>
           <q-item-section>
-            <q-item-label>CRM Dashboard</q-item-label>
+            <q-item-label>Police</q-item-label>
           </q-item-section>
         </q-item>
+
+        <q-item to="/Dashboard2" active-class="q-item-no-link-highlighting">
+          <q-item-section avatar>
+            <q-icon name="local_fire_department"/>
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>Fire</q-item-label>
+          </q-item-section>
+        </q-item>
+
+        <q-item to="/Dashboard2" active-class="q-item-no-link-highlighting">
+          <q-item-section avatar>
+            <q-icon name="fas fa-ambulance"/>
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>Ambulance</q-item-label>
+          </q-item-section>
+        </q-item>
+
+        <q-item to="/Dashboard2" active-class="q-item-no-link-highlighting">
+          <q-item-section avatar>
+            <q-icon name="emergency"/>
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>ODPM</q-item-label>
+          </q-item-section>
+        </q-item>
+        </q-list>
+        </q-expansion-item>
+
         <q-expansion-item
-          icon="pages"
-          label="Pages"
+          icon="fas fa-donate"
+          label="Request Donations"
         >
           <q-list class="q-pl-lg">
             <q-item to="/Login-1" active-class="q-item-no-link-highlighting">
               <q-item-section avatar>
-                <q-icon name="email"/>
+                <q-icon name="fastfood"/>
               </q-item-section>
               <q-item-section>
-                <q-item-label>Login-1</q-item-label>
+                <q-item-label>Food Items</q-item-label>
               </q-item-section>
             </q-item>
             <q-item to="/Lock" active-class="q-item-no-link-highlighting">
               <q-item-section avatar>
-                <q-icon name="lock"/>
+                <q-icon name="attach_money"/>
               </q-item-section>
               <q-item-section>
-                <q-item-label>Lock Screen</q-item-label>
+                <q-item-label>Money</q-item-label>
               </q-item-section>
             </q-item>
             <q-item to="/Lock-2" active-class="q-item-no-link-highlighting">
               <q-item-section avatar>
-                <q-icon name="lock"/>
+                <q-icon name="kitchen"/>
               </q-item-section>
               <q-item-section>
-                <q-item-label>Lock Screen - 2</q-item-label>
+                <q-item-label>Household Appliances</q-item-label>
               </q-item-section>
             </q-item>
             <q-item to="/Pricing" active-class="q-item-no-link-highlighting">
               <q-item-section avatar>
-                <q-icon name="list"/>
+                <q-icon name="construction"/>
               </q-item-section>
               <q-item-section>
-                <q-item-label>Pricing</q-item-label>
+                <q-item-label>Construction Materials</q-item-label>
               </q-item-section>
             </q-item>
-            <q-item-label header class="text-weight-bolder text-white">Generic</q-item-label>
-            <q-item to="/Profile" active-class="q-item-no-link-highlighting">
-              <q-item-section avatar>
-                <q-icon name="person"/>
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>User Profile</q-item-label>
-              </q-item-section>
-            </q-item>
-            <q-item to="/Maintenance" active-class="q-item-no-link-highlighting">
-              <q-item-section avatar>
-                <q-icon name="settings"/>
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>Maintenance</q-item-label>
-              </q-item-section>
-            </q-item>
+            
           </q-list>
         </q-expansion-item>
+
         <q-expansion-item
-          icon="map"
-          label="Maps"
+          icon="fas fa-hand-holding-usd"
+          label="Make A Contribution"
         >
-          <q-list class="q-pl-lg">
-            <q-item to="/Map" active-class="q-item-no-link-highlighting">
+         <q-list class="q-pl-lg">
+            <q-item to="/Login-1" active-class="q-item-no-link-highlighting">
               <q-item-section avatar>
-                <q-icon name="map"/>
+                <q-icon name="fastfood"/>
               </q-item-section>
               <q-item-section>
-                <q-item-label>Map</q-item-label>
+                <q-item-label>Food Items</q-item-label>
               </q-item-section>
             </q-item>
-            <q-item to="/MapMarker" active-class="q-item-no-link-highlighting">
+            <q-item to="/Lock" active-class="q-item-no-link-highlighting">
               <q-item-section avatar>
-                <q-icon name="location_on"/>
+                <q-icon name="attach_money"/>
               </q-item-section>
               <q-item-section>
-                <q-item-label>Map Marker</q-item-label>
+                <q-item-label>Money</q-item-label>
               </q-item-section>
             </q-item>
-            <q-item to="/StreetView" active-class="q-item-no-link-highlighting">
+            <q-item to="/Lock-2" active-class="q-item-no-link-highlighting">
               <q-item-section avatar>
-                <q-icon name="streetview"/>
+                <q-icon name="kitchen"/>
               </q-item-section>
               <q-item-section>
-                <q-item-label>Street View</q-item-label>
+                <q-item-label>Household Appliances</q-item-label>
+              </q-item-section>
+            </q-item>
+            <q-item to="/Pricing" active-class="q-item-no-link-highlighting">
+              <q-item-section avatar>
+                <q-icon name="construction"/>
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Construction Materials</q-item-label>
               </q-item-section>
             </q-item>
           </q-list>
@@ -160,158 +196,23 @@
 
         <q-item to="/Mail" active-class="q-item-no-link-highlighting">
           <q-item-section avatar>
-            <q-icon name="email"/>
+            <q-icon name="fas fa-check-square"/>
           </q-item-section>
           <q-item-section>
-            <q-item-label>Mail</q-item-label>
+            <q-item-label>Subscriptions</q-item-label>
           </q-item-section>
         </q-item>
 
         <q-item to="/directory" active-class="q-item-no-link-highlighting">
           <q-item-section avatar>
-            <q-icon name="card_giftcard"/>
+            <q-icon name="fas fa-binoculars"/>
           </q-item-section>
           <q-item-section>
-            <q-item-label>Directory</q-item-label>
+            <q-item-label>Find Users</q-item-label>
           </q-item-section>
         </q-item>
 
-        <q-item to="/TreeTable" active-class="q-item-no-link-highlighting">
-          <q-item-section avatar>
-            <q-icon name="list"/>
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>TreeTable</q-item-label>
-          </q-item-section>
-        </q-item>
-        <q-item to="/Charts" active-class="q-item-no-link-highlighting">
-          <q-item-section avatar>
-            <q-icon name="insert_chart"/>
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Charts</q-item-label>
-          </q-item-section>
-        </q-item>
-        <q-item to="/Footer" active-class="q-item-no-link-highlighting">
-          <q-item-section avatar>
-            <q-icon name="info"/>
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Footer</q-item-label>
-          </q-item-section>
-        </q-item>
-        <q-item to="/CardHeader" active-class="q-item-no-link-highlighting">
-          <q-item-section avatar>
-            <q-icon name="card_giftcard"/>
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Card Header</q-item-label>
-          </q-item-section>
-        </q-item>
-        <q-item to="/Cards" active-class="q-item-no-link-highlighting">
-          <q-item-section avatar>
-            <q-icon name="card_giftcard"/>
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Cards</q-item-label>
-          </q-item-section>
-        </q-item>
-        <q-item to="/Tables" active-class="q-item-no-link-highlighting">
-          <q-item-section avatar>
-            <q-icon name="table_chart"/>
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Tables</q-item-label>
-          </q-item-section>
-        </q-item>
-        <q-item to="/Contact" active-class="q-item-no-link-highlighting">
-          <q-item-section avatar>
-            <q-icon name="person"/>
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Contact</q-item-label>
-          </q-item-section>
-        </q-item>
-        <q-item to="/Checkout" active-class="q-item-no-link-highlighting">
-          <q-item-section avatar>
-            <q-icon name="check_circle_outline"/>
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Checkout</q-item-label>
-          </q-item-section>
-        </q-item>
-
-        <!--        not completed-->
-        <q-item to="/Calendar" active-class="q-item-no-link-highlighting">
-          <q-item-section avatar>
-            <q-icon name="date_range"/>
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Calendar</q-item-label>
-          </q-item-section>
-        </q-item>
-
-<!--        not completed-->
-<!--        <q-item to="/Taskboard" active-class="q-item-no-link-highlighting">-->
-<!--          <q-item-section avatar>-->
-<!--            <q-icon name="done"/>-->
-<!--          </q-item-section>-->
-<!--          <q-item-section>-->
-<!--            <q-item-label>Taskboard</q-item-label>-->
-<!--          </q-item-section>-->
-<!--        </q-item>-->
-
-        <q-item to="/Pagination" active-class="q-item-no-link-highlighting">
-          <q-item-section avatar>
-            <q-icon name="date_range"/>
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Pagination</q-item-label>
-          </q-item-section>
-        </q-item>
-        <q-item to="/Ecommerce" active-class="q-item-no-link-highlighting">
-          <q-item-section avatar>
-            <q-icon name="shopping_cart"/>
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Product Catalogues</q-item-label>
-          </q-item-section>
-        </q-item>
-        <q-expansion-item
-          icon="menu_open"
-          label="Menu Levels"
-        >
-          <q-item class="q-ml-xl" active-class="q-item-no-link-highlighting">
-            <q-item-section>
-              <q-item-label>Level 1</q-item-label>
-            </q-item-section>
-          </q-item>
-          <q-expansion-item
-            :header-inset-level="0.85"
-            label="Level 2"
-          >
-            <q-item class="q-ml-xl" style="margin-left: 55px  !important;" active-class="q-item-no-link-highlighting">
-              <q-item-section>
-                <q-item-label>Level 2.1</q-item-label>
-              </q-item-section>
-            </q-item>
-            <q-expansion-item
-              :header-inset-level="1"
-              label="Level 2.2"
-            >
-              <q-item style="margin-left: 65px  !important;" active-class="q-item-no-link-highlighting">
-                <q-item-section>
-                  <q-item-label>Level 2.2.1</q-item-label>
-                </q-item-section>
-              </q-item>
-              <q-item style="margin-left: 65px  !important;" active-class="q-item-no-link-highlighting">
-                <q-item-section>
-                  <q-item-label>Level 2.2.2</q-item-label>
-                </q-item-section>
-              </q-item>
-            </q-expansion-item>
-          </q-expansion-item>
-        </q-expansion-item>
+       
       </q-list>
     </q-drawer>
 
@@ -331,7 +232,8 @@ export default defineComponent({
   name: 'MainLayout',
 
   components: {
-    EssentialLink
+    EssentialLink,
+    Messages
   },
 
   setup () {

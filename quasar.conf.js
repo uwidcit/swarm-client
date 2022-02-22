@@ -93,8 +93,16 @@ module.exports = configure(function (/* ctx */) {
 
       // Quasar plugins
       plugins: [
-        'AppFullscreen'
-      ]
+        'AppFullscreen',
+        'Notify'
+      ],
+
+      config: {
+        notify: { 
+          type: 'positive',
+         }
+      }
+
     },
 
     // animations: 'all', // --- includes all animations

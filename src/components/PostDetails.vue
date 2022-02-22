@@ -14,21 +14,18 @@
           <q-item-label> <strong> {{title}} </strong></q-item-label>
           <br/>
 
+           <div class=" q-gutter-md">
+            <q-chip square color="purple-2" text-color="white" icon="sell" size="md"
+                    v-for="tags in postTags" 
+                    :key="tags.id">
+              {{tags.text}}
+            </q-chip>
+           </div>
+
           <div class="row justify-between q-mt-sm">
                 <q-btn flat round color="grey" icon="fas fa-comments" size="sm" />
                 <q-btn flat round icon="far fa-eye" size="sm"/>
                 <q-btn flat round icon="far fa-heart" size="sm" />
-                  <q-btn-dropdown  flat icon="fas fa-hashtag" size="sm">
-                    <q-list separator>
-                      <q-item  v-close-popup 
-                                v-for="tags in postTags" 
-                                :key="tags.id" >
-                        <q-item-section >
-                          <q-item-label>{{tags.text}}</q-item-label>
-                        </q-item-section>
-                      </q-item>
-                    </q-list>
-                  </q-btn-dropdown>
                 
           </div> 
         </q-item-section>
@@ -41,20 +38,11 @@
     </q-list>
 </div>
 
-<div style=" text-align: center;
-  width: 220px;
-  padding: 10px;
-  border: 5px solid gray;
-  margin-top: 50px;
-  margin-left: 50px;">
-  COMMENTS
-</div>
-
-<div  style="margin-left: 60px;" class="q-pa-md">
+<div  style="margin-left: 40px; max-height: 100px" class="q-pa-md">
     <div class="q-pa-md" >
     <q-list bordered padding separator>
       <q-item 
-      v-for="c in comments" 
+      v-for="(c, index) in comments" 
       :key="c.id"  
       active-class="q-item-no-link-highlighting">
       
@@ -66,23 +54,20 @@
 
         <q-item-section>
           <q-item-label>  {{c.text}} </q-item-label>
+          <br>
+
+          <div class=" q-gutter-md">
+            <q-chip square color="purple-2" text-color="white" icon="sell" size="md"
+                    v-for="tag in commTags[index]" 
+                    :key="tag">
+              {{tag.text}}
+            </q-chip>
+           </div>
 
           <div class="row justify-between q-mt-sm" >
-                <q-btn flat round color="grey" icon="fas fa-comments" size="sm" />
+                <q-btn flat round color="grey" icon="fas fa-comments" size="sm" @click="showComments(c.id)"/>
                 <q-btn flat round icon="far fa-eye" size="sm"/>
                 <q-btn flat round icon="far fa-heart" size="sm" />
-                <q-btn-dropdown  flat icon="fas fa-hashtag" size="sm">
-                    <q-list separator>
-                      <q-item  v-close-popup 
-                                v-for="tag in commTags[0]" 
-                                :key="tag" >
-                        <q-item-section >
-                          <q-item-label>{{tag.text}}</q-item-label>
-                        </q-item-section>
-                      </q-item>
-                    </q-list>
-                  </q-btn-dropdown>
-                
           </div> 
         </q-item-section>
          <q-item-section side top>
@@ -93,6 +78,7 @@
     </div>
 </div>
 
+
 </template>
 
 <script>
@@ -101,8 +87,11 @@ import { api } from 'boot/axios'
 import { useQuasar } from 'quasar'
 import { onMounted} from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import Vue from 'vue'
+import CommentGrid from 'vue-comment-grid'
 
 export default defineComponent({
+    
      name: 'PostDetails',
 
      data(){
@@ -158,7 +147,7 @@ export default defineComponent({
 
       function loadComments(){
          
-         let url = "https://swarmnet-staging.herokuapp.com/posts"
+         let url = "https://swarmnet-staging.herokuapp.com/replies"
          
           api.get(url,{
           method: 'GET',
@@ -172,11 +161,48 @@ export default defineComponent({
             
             
             for (let i of data.value) { 
-               
-              if(i.id != 1){
-                comments.value.push(i)
-                commTags.value.push(i.tags)
-              }
+                if(i.originalPostId == route.params.id){
+                  comments.value.push(i)
+                  commTags.value.push(i.tags)
+                }
+            } 
+          
+           console.log( "Tags ")
+          console.log(commTags.value)
+          
+          })
+          .catch(() => {
+            $q.notify({
+              color: 'negative',
+              position: 'top',
+              message: 'Loading failed',
+              icon: 'report_problem'
+            })
+          })
+
+      }
+
+      function showComments(id){
+        this.comments.slice(0);
+
+         let url = "https://swarmnet-staging.herokuapp.com/replies"
+         
+          api.get(url,{
+          method: 'GET',
+          
+          headers: {
+                  'Access-Control-Allow-Origin': '*'
+                }
+            })
+          .then((response) => {
+            data.value = response.data
+            
+            
+            for (let i of data.value) { 
+                if(i.originalPostId == id){
+                  comments.value.push(i)
+                  commTags.value.push(i.tags)
+                }
             } 
           
            console.log( "Tags ")
@@ -207,7 +233,8 @@ export default defineComponent({
         title,
         comments,
         postTags,
-        commTags
+        commTags,
+        showComments
     }
         
     },

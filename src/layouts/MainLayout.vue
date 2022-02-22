@@ -136,6 +136,24 @@
             <q-item-label>Subscriptions</q-item-label>
           </q-item-section>
         </q-item>
+
+        <q-item to="/" active-class="q-item-no-link-highlighting">
+          <q-item-section avatar>
+            <q-icon name="fas fa-envelope-open"/>
+          </q-item-section>
+          <q-item-section>
+            <q-item-label><strong>Inbox</strong></q-item-label>
+          </q-item-section>
+        </q-item>
+
+      <q-item to="/" active-class="q-item-no-link-highlighting">
+          <q-item-section avatar>
+            <q-icon name="notifications_active"/>
+          </q-item-section>
+          <q-item-section>
+            <q-item-label><strong>Notification</strong></q-item-label>
+          </q-item-section>
+        </q-item> 
        
       </q-list>
     </q-drawer>

@@ -3,7 +3,7 @@ const routes = [
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      {path: '', component: () => import('pages/Dashboard.vue')},
+      {path: '', component: () => import('pages/Dashboard.vue') ,props: true},
       {path: '/Dashboard2', component: () => import('pages/Dashboard2.vue')},
       {path: '/Profile', component: () => import('pages/UserProfile.vue')},
       {path: '/Map', component: () => import('pages/Map.vue')},
@@ -22,8 +22,6 @@ const routes = [
       {path: '/Footer', component: () => import('pages/Footer.vue')},
       {path: '/CardHeader', component: () => import('pages/CardHeader.vue')},
 
-      // Not completed yet
-      // {path: '/Taskboard', component: () => import('pages/TaskBoard.vue')},
     ]
   },
 
@@ -33,6 +31,17 @@ const routes = [
     children: [
       {
         path: '/Details/:id',component: () => import('pages/Details.vue')
+        
+      },
+    ]
+  },
+
+  {
+    path: '/InboxLayout',
+    component: () => import('layouts/InboxLayout.vue'),
+    children: [
+      {
+        path: '/Inbox',component: () => import('pages/Inbox.vue')
         
       },
     ]

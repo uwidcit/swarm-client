@@ -1,31 +1,32 @@
 <template>
   <q-layout view="lHh Lpr lFf">
     <q-header elevated >
-      <q-toolbar class="glossy">
-
-      <div class="q-gutter-y-md column" > 
+      <q-toolbar class="glossy" >
+        <div v-if="$q.platform.is.mobile">
+           <q-btn
+          flat
+          dense
+          round
+          @click="toggleLeftDrawer"
+          icon="menu"
+          aria-label="Menu"
+        />  
+        </div> 
+       
+      <q-space/>
+     <div style="max-width: 800px">
+        <q-tabs
+        v-model="tab"
+        inline-label
+        outside-arrows
+        mobile-arrows
+        class="text-white shadow-2"
+        dense
+      >
+        <q-tab v-for="topic in tops" :key="topic.id" :label="topic.text" @click="tagText=topic.id" />
         
-      <q-input 
-        filled bottom-slots 
-        v-model="lorem" 
-        label="Search board"  
-        type="text"
-        :rules="[val => !!val || 'Field is required']"
-        color="pink" 
-        style="max-width: 600px"
-        >         
-        <template v-slot:prepend>           
-          <q-icon name="search" />         
-        </template>
-
-        <template v-slot:append>           
-          <q-icon name="close" @click="lorem = ''" class="cursor-pointer" />         
-        </template>
-      </q-input>
-
-     </div>
-
-     <div class="board">
+        
+      </q-tabs>
        
      </div>
      
@@ -33,7 +34,7 @@
 
       <div class="q-gutter-sm row items-center no-wrap ">
          
-          <q-btn round dense flat color="white" icon="notifications">
+          <q-btn round dense flat color="white" icon="notifications"  >
             <q-badge color="red" text-color="white" floating>
               5
             </q-badge>
@@ -55,8 +56,8 @@
           </q-btn>
         </div>
       </q-toolbar>
+  
     </q-header>
-
 
     <q-drawer
       v-model="leftDrawerOpen"
@@ -65,9 +66,25 @@
       class="bg-primary text-white"
     >
       <q-list>
-         <q-item to="/" active-class="q-item-no-link-highlighting">
+         <q-item to="/" active-class="q-item-no-link-highlighting" >
           <q-item-section avatar>
-            <q-icon name="menu"/>
+          <span v-if="$q.platform.is.desktop" ><q-btn
+          flat
+          dense
+          round
+          icon="menu"
+          aria-label="Menu"
+        /> </span>
+
+        <span v-if="$q.platform.is.mobile" > <q-btn
+          flat
+          dense
+          round
+          @click="toggleLeftDrawer"
+          icon="menu"
+          aria-label="Menu"
+        /> </span>
+           
           </q-item-section>
           <q-item-section>
             <q-item-label><strong>SWARNET</strong></q-item-label>
@@ -76,13 +93,14 @@
 
         <q-separator color="orange" inset />
 
-        <q-item to="/" active-class="q-item-no-link-highlighting">
+        <q-item to="/"  active-class="q-item-no-link-highlighting">
           <q-item-section avatar>
             <q-icon name="fas fa-home"/>
           </q-item-section>
           <q-item-section>
             <q-item-label>Post Board</q-item-label>
           </q-item-section>
+         
         </q-item>
 
         <q-expansion-item 
@@ -137,11 +155,12 @@
           </q-item-section>
         </q-item>
 
-        <q-item to="/" active-class="q-item-no-link-highlighting">
+        <q-item to="/InboxLayout" active-class="q-item-no-link-highlighting">
           <q-item-section avatar>
             <q-icon name="fas fa-envelope-open"/>
           </q-item-section>
           <q-item-section>
+           
             <q-item-label><strong>Inbox</strong></q-item-label>
           </q-item-section>
         </q-item>
@@ -388,32 +407,44 @@ Over 6500 Police Officers in varying ranks and Special Reserved Police support t
       </q-card>
     </q-dialog>
 
+    <q-page-container  class="bg-grey-2"> 
 
-    <q-page-container class="bg-grey-2">
-      <router-view />
+       <post-board :tabText="tagText"/>
+  
     </q-page-container>
+     
+    
+
+    
   </q-layout>
 </template>
 
 <script>
 import EssentialLink from 'components/EssentialLink.vue'
 import PostBoard from 'components/PostBoard.vue';
+import Inbox from 'components/Inbox.vue';
 
 import { defineComponent, ref } from 'vue'
+import { api } from 'boot/axios'
+import { useQuasar } from 'quasar'
+import { onMounted} from 'vue'
 
 
 export default defineComponent({
   name: 'MainLayout',
 
-  props:['lorem'],
 
   components: {
     EssentialLink,
-    PostBoard
+    PostBoard,
+    Inbox
   },
 
   data () {
+    a: true;
+
     return {
+      tagText: 'Hi from data',
       text: '',
       tag: '',
       dialogVis: false,
@@ -423,7 +454,9 @@ export default defineComponent({
       }
     }
   },
-  
+
+
+
   computed: {
     dialogStyle() {
       return {
@@ -438,19 +471,66 @@ export default defineComponent({
         x: this.dialogPos.x + evt.delta.x,
         y: this.dialogPos.y + evt.delta.y
       }
-    }
+    },
+
+    
   },
 
   setup () {
     const leftDrawerOpen = ref(false)
     const lorem = ref('')
+    const $q = useQuasar()
+     $q.platform.is.mobile
+    const data = ref(null)
+    const tops = ref([])
+    const tab = ref('flooding')
+   
+
+    function loadData () {
+    api.get('https://swarmnet-staging.herokuapp.com/topics',{
+  method: 'GET',
+  
+  headers: {
+          'Access-Control-Allow-Origin': '*'
+        }
+    })
+      .then((response) => {
+        data.value = response.data
+        
+        for (let i of data.value) { 
+          tops.value.push(i)
+         
+        }
+      
+      /* console.log( tops.value[0].text) */
+       console.log(tops) 
+      })
+      .catch(() => {
+        $q.notify({
+          color: 'negative',
+          position: 'top',
+          message: 'Loading failed',
+          icon: 'report_problem'
+        })
+      })
+  }
+
+  onMounted(() => {
+      loadData();
+    })
     
 
     return {
+      data, 
+      loadData,
+      tops,
+      tab,
+    
       leftDrawerOpen,
       toggleLeftDrawer () {
         leftDrawerOpen.value = !leftDrawerOpen.value
       },
+
       lorem,
       police: ref(false),
        fire: ref(false),
@@ -458,6 +538,8 @@ export default defineComponent({
        odpm: ref(false),
       maximizedToggle: ref(false),
     }
+
+
   }
 })
 </script>

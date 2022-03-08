@@ -4,7 +4,7 @@
     <q-header bordered class="bg-primary text-white" height-hint="98">
       <q-toolbar>
         <q-toolbar-title>
-          SWARNET
+          SWARMNET
         </q-toolbar-title>
       </q-toolbar>
 

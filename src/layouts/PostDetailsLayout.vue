@@ -41,7 +41,7 @@
             <q-icon name="menu"/>
           </q-item-section>
           <q-item-section>
-            <q-item-label><strong>SWARNET</strong></q-item-label>
+            <q-item-label><strong>SWARMNET</strong></q-item-label>
           </q-item-section>
         </q-item>
 

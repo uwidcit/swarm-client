@@ -31,7 +31,10 @@
                 {{tag.text}}
             </q-chip>
 
-            <q-btn @click.prevent flat round icon="delete_forever"  color="green-3" style= " position: absolute; right: 16px;" size="md" />
+            <q-btn @click.prevent flat round icon="delete_forever"  color="green-3" 
+                   style= " position: absolute; right: 16px;" size="md" 
+                   @click="deletePost(post.id)"
+                   />
             
            </div>
 
@@ -57,7 +60,7 @@
 import {defineComponent, defineAsyncComponent, ref} from 'vue';
 import { api } from 'boot/axios'
 import { useQuasar } from 'quasar'
-import { onMounted} from 'vue'
+import { onMounted, onUpdated} from 'vue'
 
 export default {
     name: 'Inbox',
@@ -109,18 +112,40 @@ export default {
         })
       })
   }
+ 
+   function deletePost(id){
+     console.log(id)
+     console.log(pos)
+     
+     var loc = 0;
+     for (let i of pos.value) { 
+       if(i.id == parseInt(id)){
+         console.log(i.id)
+         pos.value.splice(loc, 1);
+       }
+       loc += 1
+      }
 
+      console.log(pos.value) 
+
+   }
     
 
   onMounted(() => {
       loadData();
-     
     })
+  
+  onUpdated(() => {
+    deletePost();
+  })
+
+
     
 
     return {
       data, 
       loadData,
+      deletePost,
       tops,
       tab,
       pos,

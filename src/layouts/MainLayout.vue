@@ -11,10 +11,25 @@
           icon="menu"
           aria-label="Menu"
         />  
+
+         <q-space/>
+          <div style="max-width: 200px">
+              <q-tabs
+              v-model="tab"
+              inline-label
+              outside-arrows
+              mobile-arrows
+              class="text-white shadow-2"
+              dense
+            >
+        <q-tab v-for="topic in tops" :key="topic.id" :label="topic.text" @click="tagText=topic.id" />
+              </q-tabs>
+
         </div> 
+        </div>
        
       <q-space/>
-     <div style="max-width: 800px">
+     <div v-if="$q.platform.is.desktop" style="max-width: 800px">
         <q-tabs
         v-model="tab"
         inline-label
@@ -24,8 +39,7 @@
         dense
       >
         <q-tab v-for="topic in tops" :key="topic.id" :label="topic.text" @click="tagText=topic.id" />
-        
-        
+          
       </q-tabs>
        
      </div>
@@ -87,7 +101,7 @@
            
           </q-item-section>
           <q-item-section>
-            <q-item-label><strong>SWARNET</strong></q-item-label>
+            <q-item-label><strong>SWARMNET</strong></q-item-label>
           </q-item-section>
         </q-item>
 
@@ -146,7 +160,7 @@
         </q-list>
         </q-expansion-item>
 
-        <q-item to="/Mail" active-class="q-item-no-link-highlighting">
+        <q-item to="/" active-class="q-item-no-link-highlighting">
           <q-item-section avatar>
             <q-icon name="fas fa-check-square"/>
           </q-item-section>
@@ -184,6 +198,7 @@
       transition-show="slide-up"
       transition-hide="rotate"
       seamless
+      no-backdrop-dismiss
     >
       <q-card class="bg-primary text-white" :style="dialogStyle" >
         <q-bar v-touch-pan.mouse="onPan">

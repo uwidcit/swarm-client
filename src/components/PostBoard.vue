@@ -1,27 +1,35 @@
 <template>
   <div class="q-pa-md" >
-    <div>
-      <ejs-autocomplete > </ejs-autocomplete>
-    </div>
-    <q-input 
-        filled bottom-slots 
-        v-model="lorem" 
-        label="Search board" 
-         
-        type="text"
-        :rules="[val => !!val || 'Field is required']"
-        color="pink" 
-        style="max-width: 600px"
-        >         
-        <template v-slot:prepend>           
-          <q-icon name="search" />
-                   
+
+    <div class="q-gutter-md row">
+      <q-select
+        filled
+        :model-value="automodel"
+        use-input
+        hide-selected
+        fill-input
+        input-debounce="0"
+        :options="options"
+        @filter="filterFn"
+        @input-value="setModel"
+        style="width: 350px; padding-bottom: 32px"
+      >
+        <template v-slot:no-option>
+          <q-item>
+            <q-item-section class="text-grey">
+              No results
+            </q-item-section>
+          </q-item>
         </template>
 
-        <template v-slot:append>           
-          <q-icon name="close" @click="lorem = ''" class="cursor-pointer" />         
+        <template v-slot:prepend>           
+          <q-icon name="search" />          
         </template>
-      </q-input>
+
+
+      </q-select>
+    </div>
+  
 
       <q-toggle
         v-model="subbed"
@@ -33,7 +41,7 @@
     
     <q-btn fab flat round icon="far fa-edit" color="accent" size="xs" fab-mini @click="fixed = true"/>
 
-     <q-dialog v-model="fixed">
+     <q-dialog v-model="fixed" no-refocus>
       <q-card style="width: 600px; height: 400px; background-color: powderblue;">
         <q-card-actions>
           <q-btn-dropdown color="primary" label="TOPICS">
@@ -48,14 +56,30 @@
         </q-card-actions>
 
         <q-card-section>
-          <div class="text-h6">NEW DISCUSSION FOR {{tab}}</div>
+          <div class="text-h6">New Discusssion For {{ptabtext}} </div>
         </q-card-section>
         <q-separator />
 
-        <q-card-section style="height: 200px" class="scroll" counter maxlength="260">
+        <q-card-section style="height: 120px" class="scroll" counter maxlength="260">
           <q-input placeholder="Enter Post Here!" type="textarea" v-model="text" counter maxlength="260"  autogrow>
           </q-input>
         </q-card-section>
+
+        <q-separator/>
+
+        <q-card-actions> 
+          <div style="min-width: 250px; max-width: 300px">
+            <q-select
+              filled
+              v-model="modelMultiple"
+              multiple
+              :options="options"
+              use-chips
+              stack-label
+              label="Please select tags .."
+            />
+      </div>
+        </q-card-actions>
 
         <q-separator />
 
@@ -63,6 +87,7 @@
           <q-btn flat label="Discard" color="primary" @click="text = ''" v-close-popup />
           <q-btn flat label="Post" color="primary" v-close-popup @click="triggerPositive(); text = '';"/>
         </q-card-actions>
+
       </q-card>
     </q-dialog>
   </div>
@@ -126,11 +151,22 @@
 
 </template>
 
+
+
 <script>
 import {defineComponent, defineAsyncComponent, ref} from 'vue';
 import { api } from 'boot/axios'
 import { useQuasar } from 'quasar'
 import { onMounted, onUpdated} from 'vue'
+
+const stringOptions = [
+  'Google', 'Facebook', 'Twitter', 'Apple', 'Oracle'
+].reduce((acc, opt) => {
+  for (let i = 1; i <= 5; i++) {
+    acc.push(opt + ' ' + i)
+  }
+  return acc
+}, [])
 
 
 
@@ -160,28 +196,43 @@ export default defineComponent({
     const posTags = ref([])
     const tab = ref('flooding')
     const comments = ref([])
-    const lorem = ref('')
+    const ptabtext = ref('')
+    const searchtags = ref([])
+    const automodel = ref(null)
+    const options = ref(searchtags)
 
 
-  function loadData () {
-   
-    api.get('https://swarmnet-staging.herokuapp.com/topics',{
-  method: 'GET',
-  
-  headers: {
-          'Access-Control-Allow-Origin': '*'
-        }
-    })
+  function getDetails(topic){
+      pos.value.splice(0)
+
+      let url = "https://swarmnet-staging.herokuapp.com/posts"
+      api.get(url,{
+      method: 'GET',
+      headers: {
+              'Access-Control-Allow-Origin': '*'
+            }
+        })
       .then((response) => {
         data.value = response.data
-        
+
         for (let i of data.value) { 
-          tops.value.push(i)
-         
+          if(i.topicId == parseInt(topic)){
+            pos.value.push(i)
+            posTags.value.push(i.tags)
+          for(let j of comments.value){
+            if(i.id == j.id ){
+              pos.value.pop()
+              posTags.value.pop()
+            }
+            }
+          }
         }
-      
-      /* console.log( tops.value[0].text) */
-       console.log(tops) 
+
+        for(let j of tops.value){
+          if(j.id == parseInt(props.tabText)){
+            ptabtext.value = j.text
+          }     
+        }    
       })
       .catch(() => {
         $q.notify({
@@ -191,53 +242,6 @@ export default defineComponent({
           icon: 'report_problem'
         })
       })
-  }
-
-  function getDetails(topic){
-      pos.value.splice(0)
-
-      // posTags.splice(0);
-
-      console.log(topic)
-        console.log(comments.value)
-         let url = "https://swarmnet-staging.herokuapp.com/posts"
-         console.log(url)
-          api.get(url,{
-          method: 'GET',
-          
-          headers: {
-                  'Access-Control-Allow-Origin': '*'
-                }
-            })
-          .then((response) => {
-            data.value = response.data
-            console.log(pos.value)
-
-            for (let i of data.value) { 
-              
-              if(i.topicId == parseInt(topic)){
-                console.log("entered")
-               pos.value.push(i)
-               posTags.value.push(i.tags)
-              for(let j of comments.value){
-                if(i.id == j.id ){
-                  pos.value.pop()
-                  posTags.value.pop()
-                }
-               }
-              }
-            }
-            console.log(pos.value)
-            
-          })
-          .catch(() => {
-            $q.notify({
-              color: 'negative',
-              position: 'top',
-              message: 'Loading failed',
-              icon: 'report_problem'
-            })
-          })
 
       }
 
@@ -266,7 +270,6 @@ export default defineComponent({
             })
           })
 
-          console.log(comments.value)
     
          let url = "https://swarmnet-staging.herokuapp.com/posts"
          
@@ -281,17 +284,22 @@ export default defineComponent({
             data.value = response.data
             
            for (let i of data.value) { 
+             for(let k of i.tags){
+              if(searchtags.value.indexOf(k.text) == -1){
+                searchtags.value.push(k.text)
+                console.log(k.text)
+              }
+          }
              pos.value.push(i)
              posTags.value.push(i.tags)
              for(let j of comments.value){
                if(i.id == j.id){
                  pos.value.pop()
                  posTags.value.pop()
-               }
-              
+               }  
              }
             }
-            console.log(pos.value)
+            console.log(posTags.value)
            
           })
           .catch(() => {
@@ -351,26 +359,37 @@ export default defineComponent({
   }     
 
   onMounted(() => {
-      loadData();
       displayAllPost(); 
     })
   
   onUpdated(()=> {
-    console.log(props.tabText)
     getDetails(props.tabText);
   })
  
-  
 
     return {
+      modelMultiple: ref(),
+      automodel,
+      options,
+      searchtags,
+
+      filterFn (val, update, abort) {
+        update(() => {
+          const needle = val.toLocaleLowerCase()
+          options.value = searchtags.value.filter(v => v.toLocaleLowerCase().indexOf(needle) > -1)
+        })
+      },
+
+      setModel (val) {
+        automodel.value = val
+      },
         data, 
-        loadData,
         displayAllPost,
         tops,
         pos,
         posTags,
         getDetails,
-        lorem,
+        ptabtext,
         
         model,
         subbed,
@@ -403,12 +422,6 @@ export default defineComponent({
 })
 </script>
 
-
-<style>
-@import "/workspace/swarm-client//node_modules/@syncfusion/ej2-base/styles/material.css";
-@import "/workspace/swarm-client//node_modules/@syncfusion/ej2-inputs/styles/material.css";
-@import "/workspace/swarm-client//node_modules/@syncfusion/ej2-vue-dropdowns/styles/material.css";
-</style>
 
 
 

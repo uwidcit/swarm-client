@@ -80,7 +80,7 @@
       class="bg-primary text-white"
     >
       <q-list>
-         <q-item to="/" active-class="q-item-no-link-highlighting" >
+         <q-item to="/home" active-class="q-item-no-link-highlighting" >
           <q-item-section avatar>
           <span v-if="$q.platform.is.desktop" ><q-btn
           flat
@@ -101,13 +101,13 @@
            
           </q-item-section>
           <q-item-section>
-            <q-item-label><strong>SWARNET</strong></q-item-label>
+            <q-item-label><strong>SWARMNET</strong></q-item-label>
           </q-item-section>
         </q-item>
 
         <q-separator color="orange" inset />
 
-        <q-item to="/"  active-class="q-item-no-link-highlighting">
+        <q-item to="/home"  active-class="q-item-no-link-highlighting">
           <q-item-section avatar>
             <q-icon name="fas fa-home"/>
           </q-item-section>
@@ -160,14 +160,17 @@
         </q-list>
         </q-expansion-item>
 
-        <q-item to="/" active-class="q-item-no-link-highlighting">
-          <q-item-section avatar>
-            <q-icon name="fas fa-check-square"/>
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Subscriptions</q-item-label>
-          </q-item-section>
-        </q-item>
+        
+        <q-btn icon ="fas fa-check-square" label="Subscriptions" align="between" @click="prompt = true" no-caps flat/>
+
+        <q-dialog v-model="prompt" persistent>
+          <q-card style="min-width: 350px">
+            <subscriptions/>
+            <q-card-actions align="right" class="text-primary">
+              <q-btn flat label="Cancel" v-close-popup />
+            </q-card-actions>
+          </q-card>
+        </q-dialog>
 
         <q-item to="/InboxLayout" active-class="q-item-no-link-highlighting">
           <q-item-section avatar>
@@ -179,7 +182,7 @@
           </q-item-section>
         </q-item>
 
-      <q-item to="/" active-class="q-item-no-link-highlighting">
+      <q-item to="/home" active-class="q-item-no-link-highlighting">
           <q-item-section avatar>
             <q-icon name="notifications_active"/>
           </q-item-section>
@@ -423,13 +426,8 @@ Over 6500 Police Officers in varying ranks and Special Reserved Police support t
     </q-dialog>
 
     <q-page-container  class="bg-grey-2"> 
-
        <post-board :tabText="tagText"/>
-  
     </q-page-container>
-     
-    
-
     
   </q-layout>
 </template>
@@ -437,12 +435,13 @@ Over 6500 Police Officers in varying ranks and Special Reserved Police support t
 <script>
 import EssentialLink from 'components/EssentialLink.vue'
 import PostBoard from 'components/PostBoard.vue';
-import Inbox from 'components/Inbox.vue';
 
 import { defineComponent, ref } from 'vue'
 import { api } from 'boot/axios'
 import { useQuasar } from 'quasar'
 import { onMounted} from 'vue'
+import Inbox from 'src/pages/Inbox.vue';
+import Subscriptions from 'src/components/Subscriptions.vue';
 
 
 export default defineComponent({
@@ -452,7 +451,8 @@ export default defineComponent({
   components: {
     EssentialLink,
     PostBoard,
-    Inbox
+    Inbox,
+    Subscriptions,
   },
 
   data () {
@@ -502,6 +502,7 @@ export default defineComponent({
    
 
     function loadData () {
+      console.log(localStorage.getItem('token'))
     api.get('https://swarmnet-staging.herokuapp.com/topics',{
   method: 'GET',
   
@@ -536,6 +537,7 @@ export default defineComponent({
     
 
     return {
+      prompt: ref(false),
       data, 
       loadData,
       tops,

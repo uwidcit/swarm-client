@@ -13,6 +13,7 @@
         @filter="filterFn"
         @input-value="setModel"
         style="width: 350px; padding-bottom: 32px"
+        @click="searchByTags(options.values)"
       >
         <template v-slot:no-option>
           <q-item>
@@ -29,7 +30,6 @@
 
       </q-select>
     </div>
-  
 
       <q-toggle
         v-model="subbed"
@@ -44,9 +44,9 @@
      <q-dialog v-model="fixed" no-refocus>
       <q-card style="width: 600px; height: 400px; background-color: powderblue;">
         <q-card-actions>
-          <q-btn-dropdown color="primary" label="TOPICS">
+          <q-btn-dropdown color="primary" label="TOPICS" >
             <q-list v-for="topic in tops" :key="topic.id">
-              <q-item clickable v-close-popup >
+              <q-item clickable v-close-popup @click="ptabtext= topic.text , ptopid= topic.id">
                 <q-item-section>
                   <q-item-label>{{topic.text}}</q-item-label>
                 </q-item-section>
@@ -85,7 +85,7 @@
 
         <q-card-actions align="right">
           <q-btn flat label="Discard" color="primary" @click="text = ''" v-close-popup />
-          <q-btn flat label="Post" color="primary" v-close-popup @click="triggerPositive(); text = '';"/>
+          <q-btn flat label="Post" color="primary" v-close-popup @click="postPost(text, modelMultiple); text = '';"/>
         </q-card-actions>
 
       </q-card>
@@ -147,62 +147,70 @@
     <br>
     
     </div>
-    
-
 </template>
 
 
-
 <script>
-import {defineComponent, defineAsyncComponent, ref} from 'vue';
+import {defineComponent, ref} from 'vue';
 import { api } from 'boot/axios'
 import { useQuasar } from 'quasar'
 import { onMounted, onUpdated} from 'vue'
 
-const stringOptions = [
-  'Google', 'Facebook', 'Twitter', 'Apple', 'Oracle'
-].reduce((acc, opt) => {
-  for (let i = 1; i <= 5; i++) {
-    acc.push(opt + ' ' + i)
-  }
-  return acc
-}, [])
-
-
-
-
 export default defineComponent({
   name: 'PostBoard',
 
-  props:['tabText'],
-
-  data(){
-        return {
-          topic: this.$route.params.props,
-         
-           
-          }
-        
-     },
-  
+  props:['tabText'], 
 
   setup (props) {
     const $q = useQuasar()
     const data = ref(null)
     const tops = ref([])
     const pos = ref([])
-    const  subbed = ref(true)
+    const subbed = ref(false)
     const model = ref(null)
     const posTags = ref([])
     const tab = ref('flooding')
     const comments = ref([])
     const ptabtext = ref('')
+    const ptopid = ref('')
     const searchtags = ref([])
     const automodel = ref(null)
     const options = ref(searchtags)
+    const subID = ref('')
+
+    /* gets topics to use for q-dialog */
+    function loadData () {
+    
+    api.get('https://swarmnet-staging.herokuapp.com/topics',{
+  method: 'GET',
+  
+  headers: {
+          'Access-Control-Allow-Origin': '*'
+        }
+    })
+      .then((response) => {
+        data.value = response.data
+        
+        for (let i of data.value) { 
+          tops.value.push(i)
+         
+        }
+      
+      /* console.log( tops.value[0].text) */
+       console.log(tops) 
+      })
+      .catch(() => {
+        $q.notify({
+          color: 'negative',
+          position: 'top',
+          message: 'Loading failed',
+          icon: 'report_problem'
+        })
+      })
+  }
 
 
-  function getDetails(topic){
+    function getDetails(topic){
       pos.value.splice(0)
 
       let url = "https://swarmnet-staging.herokuapp.com/posts"
@@ -217,22 +225,26 @@ export default defineComponent({
 
         for (let i of data.value) { 
           if(i.topicId == parseInt(topic)){
-            pos.value.push(i)
-            posTags.value.push(i.tags)
+            pos.value.unshift(i)
+            posTags.value.unshift(i.tags)
           for(let j of comments.value){
             if(i.id == j.id ){
-              pos.value.pop()
-              posTags.value.pop()
+              pos.value.shift()
+              posTags.value.shift()
             }
             }
           }
         }
 
+        console.log(pos.value)
+
         for(let j of tops.value){
           if(j.id == parseInt(props.tabText)){
             ptabtext.value = j.text
           }     
-        }    
+        }   
+        
+        subsStatus(props.tabText);
       })
       .catch(() => {
         $q.notify({
@@ -245,125 +257,267 @@ export default defineComponent({
 
       }
 
-  function displayAllPost(){
-        let curl = "https://swarmnet-staging.herokuapp.com/replies"
-          api.get(curl,{
-          method: 'GET',
-          
-          headers: {
-                  'Access-Control-Allow-Origin': '*'
-                }
-            })
-          .then((response) => {
-            data.value = response.data
-            
-           for (let i of data.value) { 
-               comments.value.push(i)
-            }
-           })
-          .catch(() => {
-            $q.notify({
-              color: 'negative',
-              position: 'top',
-              message: 'Loading failed',
-              icon: 'report_problem'
-            })
-          })
+    function searchByTags(topicNmae){
+      console.log("function called")
+      console.log(topicNmae)
+    }
 
-    
-         let url = "https://swarmnet-staging.herokuapp.com/posts"
-         
-          api.get(url,{
-          method: 'GET',
-          
-          headers: {
-                  'Access-Control-Allow-Origin': '*'
-                }
-            })
-          .then((response) => {
-            data.value = response.data
+    function displayAllPost(){
+          let curl = "https://swarmnet-staging.herokuapp.com/replies"
+            api.get(curl,{
+            method: 'GET',
             
-           for (let i of data.value) { 
-             for(let k of i.tags){
-              if(searchtags.value.indexOf(k.text) == -1){
-                searchtags.value.push(k.text)
-                console.log(k.text)
+            headers: {
+                    'Access-Control-Allow-Origin': '*'
+                  }
+              })
+            .then((response) => {
+              data.value = response.data
+              
+            for (let i of data.value) { 
+                comments.value.push(i)
               }
-          }
-             pos.value.push(i)
-             posTags.value.push(i.tags)
-             for(let j of comments.value){
-               if(i.id == j.id){
-                 pos.value.pop()
-                 posTags.value.pop()
-               }  
-             }
-            }
-            console.log(posTags.value)
-           
-          })
-          .catch(() => {
-            $q.notify({
-              color: 'negative',
-              position: 'top',
-              message: 'Loading failed',
-              icon: 'report_problem'
             })
-          })
+            .catch(() => {
+              $q.notify({
+                color: 'negative',
+                position: 'top',
+                message: 'Loading failed',
+                icon: 'report_problem'
+              })
+            })
 
-      }
-  
-
-  function  showNotif () {
-         if (subbed.value == true){
-           $q.notify({
-          message: 'SUBSCRIBBED',
-          color: 'primary',
-          avatar: 'https://cdn.quasar.dev/img/boy-avatar.png',
-          actions: [
-            { label: 'Dismiss', color: 'white', handler: () => { /* ... */ } }
-          ]
-        })
-         }   
-       }
-
-  function postPost(){
-    let url = "https://swarmnet-staging.herokuapp.com/posts"
-         
-          api.get(url,{
-          method: 'POST',
+      
+          let url = "https://swarmnet-staging.herokuapp.com/posts"
           
-          headers: {
-                  'Access-Control-Allow-Origin': '*'
+            api.get(url,{
+            method: 'GET',
+            
+            headers: {
+                    'Access-Control-Allow-Origin': '*'
+                  }
+              })
+            .then((response) => {
+              data.value = response.data
+
+              
+            for (let i of data.value) { 
+              for(let k of i.tags){
+                if(searchtags.value.indexOf(k.text) == -1){
+                  searchtags.value.push(k.text)
+                  console.log(k.text)
                 }
-            })
-          .then((response) => {
-            if(response.data == "Created"){
-              triggerPositive ();
-              setTimeout(() => {
-                displayAllPost();    
-        }, 3000) 
             }
- 
+              pos.value.unshift(i)
+              posTags.value.unshift(i.tags)
+              for(let j of comments.value){
+                if(i.id == j.id){
+                  pos.value.shift()
+                  posTags.value.shift()
+                }  
+              }
+              }
+              console.log(posTags.value)
+            
+            })
+            .catch(() => {
+              $q.notify({
+                color: 'negative',
+                position: 'top',
+                message: 'Loading failed',
+                icon: 'report_problem'
+              })
+            })
+
+        }
+    
+  /* toggles subscription status */
+    function  showNotif () {
+      console.log(subID.value)
+        let url = `https://swarmnet-staging.herokuapp.com/subscriptions/${subID.value}/status`
+        console.log(url)
+        api.put(url,{
+          subId: subID.value
+        },
+        {
+            method: 'PUT',
+            
+            headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    Authorization:'JWT '+ localStorage.getItem('token'),
+                    }
+                })
+          .then((response) => { 
+              if(response.status == 200){
+                let staturl = "https://swarmnet-staging.herokuapp.com/subscriptions/" + subID.value
+                api.get(staturl,{
+                method: 'GET',
+                
+                headers: {
+                        'Access-Control-Allow-Origin': '*',
+                        Authorization:'JWT '+ localStorage.getItem('token'),
+                        }
+                    })
+                    .then((response) => {
+                        data.value = response.data
+              
+                            if(data.value.status == true){
+                              $q.notify({
+                                  message: 'SUBSCRIBBED',
+                                  color: 'primary',
+                                  avatar: 'https://cdn.quasar.dev/img/boy-avatar.png',
+                                  actions: [
+                                    { label: 'Dismiss', color: 'white', handler: () => { /* ... */ } }
+                                  ]
+                                })
+                              subbed.value = true;
+                            }
+    
+                    })
+                    .catch(() => {
+                        $q.notify({
+                        color: 'negative',
+                        position: 'top',
+                        message: 'Loading failed',
+                        icon: 'report_problem'
+                        })
+                    })
+
+              }         
           })
           .catch(() => {
-            $q.notify({
+              $q.notify({
               color: 'negative',
               position: 'top',
               message: 'Loading failed',
               icon: 'report_problem'
+              })
+          })
+    
+        }
+    
+    /* creates new post using q-dialog*/ 
+    function postPost(text, tags){
+      if(ptopid.value == ''){
+        ptopid.value = props.tabText
+      }
+
+      let url = "https://swarmnet-staging.herokuapp.com/posts"
+          
+            api.post(url,{
+              topic_id: ptopid.value,  
+              text: text,
+              tags: tags,
+              composed: "2022-03-02T14:48:00Z"
+              },
+              {
+                headers: {
+                  Authorization:'JWT '+ localStorage.getItem('token'),
+                  'Access-Control-Allow-Origin': '*'
+                  
+                }
+              }
+              )
+            .then((response) => {
+              if(response.data == "Created"){
+                triggerPositive ();
+                setTimeout(() => {
+                  displayAllPost();    
+          }, 3000) 
+              }
+  
             })
+            .catch(() => {
+              $q.notify({
+                color: 'negative',
+                position: 'top',
+                message: 'Loading failed',
+                icon: 'report_problem'
+              })
+            }) 
+    }     
+
+   /* displays subscription status when topic post load */
+    function subsStatus(id){
+      let found = false
+      api.get('https://swarmnet-staging.herokuapp.com/users/1/subscriptions',{
+      method: 'GET',
+      
+      headers: {
+              'Access-Control-Allow-Origin': '*',
+              Authorization:'JWT '+ localStorage.getItem('token'),
+              }
+          })
+          .then((response) => {
+              data.value = response.data
+              
+              for(let i of data.value){
+                if(i.topicId == id){
+                  console.log("subscription already created")
+                  subID.value = i.id;
+                  found = true;
+
+                  if(i.status == true){
+                    console.log(true)
+                    subbed.value = true;
+                  }
+                  else{
+                    subbed.value = false;
+                  }
+                  
+                }
+              }
+              /* subscription not found, create one */
+              if(found == false){
+                console.log("subscription does not exist")
+                subbed.value = false;
+                 let suburl = "https://swarmnet-staging.herokuapp.com/subscriptions"
+          
+                  api.post(suburl,{
+                    topic_id: id,  
+                    },
+                    {
+                      headers: {
+                        Authorization:'JWT '+ localStorage.getItem('token'),
+                        'Access-Control-Allow-Origin': '*'                       
+                      }
+                    }
+                    )
+                  .then((response) => {
+                    if(response.data == "created"){
+                     console.log("Subscription created")
+                     subbed.value = false;
+                    }
+                  })
+                  .catch(() => {
+                    $q.notify({
+                      color: 'negative',
+                      position: 'top',
+                      message: 'Loading failed',
+                      icon: 'report_problem'
+                    })
+                  }) 
+                    }  
+                })
+          .catch(() => {
+              $q.notify({
+              color: 'negative',
+              position: 'top',
+              message: 'Loading failed',
+              icon: 'report_problem'
+              })
           })
 
+    }
 
-  }     
 
   onMounted(() => {
-      displayAllPost(); 
+      displayAllPost();
+      loadData(); 
     })
   
   onUpdated(()=> {
-    getDetails(props.tabText);
+    getDetails(props.tabText); 
   })
  
 
@@ -383,13 +537,18 @@ export default defineComponent({
       setModel (val) {
         automodel.value = val
       },
+        searchByTags,
         data, 
         displayAllPost,
+        loadData,
         tops,
         pos,
         posTags,
         getDetails,
         ptabtext,
+        postPost,
+        ptopid,
+        subsStatus,
         
         model,
         subbed,

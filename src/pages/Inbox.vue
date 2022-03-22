@@ -83,7 +83,7 @@ export default {
 
 
     function loadData () {
-    api.get('https://swarmnet-staging.herokuapp.com/posts',{
+    api.get('https://swarmnet-prod.herokuapp.com/posts',{
   method: 'GET',
   
   headers: {

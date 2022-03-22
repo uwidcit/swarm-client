@@ -1,15 +1,18 @@
 <template>
   <div >
-    <div :style="indent" @click="toggleChildren" id="rcorners3">
-      <q-avatar>
-            <img src="https://cdn.quasar.dev/img/boy-avatar.png">
-          </q-avatar> {{ label }}
-      <div class="row justify-between q-mt-sm">
-          <q-btn @click.prevent flat round color="grey" icon="fas fa-comments" size="sm"/>
-          <q-btn @click.prevent.stop flat round icon="far fa-eye" size="sm"/>
-          <q-btn @click.prevent.stop flat round icon="far fa-heart" size="sm" />
-          <q-btn @click.prevent.stop flat round icon="fas fa-plus-circle"   @click="toggleReplies(), createNewComment()" />
-          </div> 
+    <div class="q-mr-sm " :style="indent" @click="toggleChildren" id="rcorners3">
+      
+      <span>
+        <q-avatar>
+              <img src="https://cdn.quasar.dev/img/boy-avatar.png">
+            </q-avatar>
+            {{ label }}
+      </span>
+      
+          <span style="postiton: right">
+            <q-btn @click.prevent flat round color="grey" icon="fas fa-comments" size="sm"/>
+            <q-btn @click.prevent.stop flat round icon="fas fa-plus-circle"   @click="toggleReplies(), createNewComment()" />
+          </span>
       </div>
 
       <div v-if="createReply" id="newreply" :style="indent" :depth="depth + 1">
@@ -64,13 +67,11 @@
     },
 
     setup(props) {
-      console.log(props.nodes)
       
       function createNewComment(){
         console.log("creating new comment")
         
       }
-    
 
     return{
       createNewComment,
@@ -82,24 +83,23 @@
 <style>
 #rcorners3 {
   margin-bottom: 10px;
-  width: fit-content;
+  
+  width:100vw;
   height: fit-content;
-  border: 2px solid #ADD8E6;
+ 
   border-radius: 12px;
-  padding: 5px;
+  margin-right: 10px;
 
 }
 #newreply {
   background-color: Gainsboro;
   margin-bottom: 10px;
-  width: fit-content;
   height: fit-content;
   border: 2px solid Gainsboro;
   border-radius: 12px;
   padding: 5px;
   position: relative;
   left: 40px;
-
 }
 </style>
 

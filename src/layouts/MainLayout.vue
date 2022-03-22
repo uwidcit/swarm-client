@@ -1,6 +1,6 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <q-header elevated >
+    <q-header class="bg-cyan-8 text-white" elevated >
       <q-toolbar class="glossy" >
         <div v-if="$q.platform.is.mobile">
            <q-btn
@@ -22,14 +22,15 @@
               class="text-white shadow-2"
               dense
             >
-        <q-tab v-for="topic in tops" :key="topic.id" :label="topic.text" @click="tagText=topic.id" />
-              </q-tabs>
+            <q-tab  label="ALL TOPICS" @click="tagText='0'" />
+            <q-tab v-for="topic in tops" :key="topic.id" :label="topic.text" @click="tagText=topic.id" />
+                  </q-tabs>
 
         </div> 
         </div>
        
-      <q-space/>
-     <div v-if="$q.platform.is.desktop" style="max-width: 800px">
+      
+     <div v-if="$q.platform.is.desktop" style="max-width: 1000px">
         <q-tabs
         v-model="tab"
         inline-label
@@ -38,8 +39,11 @@
         class="text-white shadow-2"
         dense
       >
+        
+        <q-tab  label="ALL TOPICS" @click="tagText='0'" />
         <q-tab v-for="topic in tops" :key="topic.id" :label="topic.text" @click="tagText=topic.id" />
-          
+         
+           
       </q-tabs>
        
      </div>
@@ -77,7 +81,11 @@
       v-model="leftDrawerOpen"
       show-if-above
       bordered
-      class="bg-primary text-white"
+      class="bg-cyan-8 text-white"
+      mini-to-overlay
+      :mini="miniState"
+      @mouseover="miniState = false"
+      @mouseout="miniState = true"
     >
       <q-list>
          <q-item to="/home" active-class="q-item-no-link-highlighting" >
@@ -107,12 +115,23 @@
 
         <q-separator color="orange" inset />
 
-        <q-item to="/home"  active-class="q-item-no-link-highlighting">
+        <q-item to="/home"  active-class="q-item-no-link-highlighting" @click="ok = true">
           <q-item-section avatar>
             <q-icon name="fas fa-home"/>
           </q-item-section>
           <q-item-section>
             <q-item-label>Post Board</q-item-label>
+          </q-item-section>
+         
+        </q-item>
+
+         <q-item to="/home"  active-class="q-item-no-link-highlighting" @click="ok = false">
+
+          <q-item-section avatar>
+            <q-icon name="account_box"/>
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>My Feed</q-item-label>
           </q-item-section>
          
         </q-item>
@@ -159,18 +178,6 @@
         </q-item>
         </q-list>
         </q-expansion-item>
-
-        
-        <q-btn icon ="fas fa-check-square" label="Subscriptions" align="between" @click="prompt = true" no-caps flat/>
-
-        <q-dialog v-model="prompt" persistent>
-          <q-card style="min-width: 350px">
-            <subscriptions/>
-            <q-card-actions align="right" class="text-primary">
-              <q-btn flat label="Cancel" v-close-popup />
-            </q-card-actions>
-          </q-card>
-        </q-dialog>
 
         <q-item to="/InboxLayout" active-class="q-item-no-link-highlighting">
           <q-item-section avatar>
@@ -425,14 +432,20 @@ Over 6500 Police Officers in varying ranks and Special Reserved Police support t
       </q-card>
     </q-dialog>
 
-    <q-page-container  class="bg-grey-2"> 
+    <q-page-container  v-if="ok" class="bg-grey-2"> 
        <post-board :tabText="tagText"/>
     </q-page-container>
+
+    <q-page-container  v-else class="bg-grey-2"> 
+       <user-feed/>
+    </q-page-container>
+    
     
   </q-layout>
 </template>
 
 <script>
+
 import EssentialLink from 'components/EssentialLink.vue'
 import PostBoard from 'components/PostBoard.vue';
 
@@ -442,7 +455,7 @@ import { useQuasar } from 'quasar'
 import { onMounted} from 'vue'
 import Inbox from 'src/pages/Inbox.vue';
 import Subscriptions from 'src/components/Subscriptions.vue';
-
+import UserFeed from 'src/pages/UserFeed.vue';
 
 export default defineComponent({
   name: 'MainLayout',
@@ -453,15 +466,15 @@ export default defineComponent({
     PostBoard,
     Inbox,
     Subscriptions,
+    UserFeed,
   },
 
   data () {
-    a: true;
-
     return {
       tagText: 'Hi from data',
       text: '',
       tag: '',
+      ok: true,
       dialogVis: false,
       dialogPos: {
         x: 0,
@@ -500,10 +513,10 @@ export default defineComponent({
     const tops = ref([])
     const tab = ref('flooding')
    
-
+    
     function loadData () {
       console.log(localStorage.getItem('token'))
-    api.get('https://swarmnet-staging.herokuapp.com/topics',{
+    api.get('https://swarmnet-prod.herokuapp.com/topics',{
   method: 'GET',
   
   headers: {
@@ -537,12 +550,11 @@ export default defineComponent({
     
 
     return {
-      prompt: ref(false),
       data, 
       loadData,
       tops,
       tab,
-    
+      miniState: ref(true),
       leftDrawerOpen,
       toggleLeftDrawer () {
         leftDrawerOpen.value = !leftDrawerOpen.value

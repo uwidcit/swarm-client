@@ -26,7 +26,7 @@ export default {
         function loadSub () {
             subs.value.splice(0)
 
-        api.get('https://swarmnet-staging.herokuapp.com/users/1/subscriptions',{
+        api.get('https://swarmnet-prod.herokuapp.com/users/1/subscriptions',{
             method: 'GET',
             
             headers: {
@@ -39,7 +39,7 @@ export default {
             
             for (let i of data.value) { 
                 if(i.status == true){
-                let url = "https://swarmnet-staging.herokuapp.com/topics/" + i.topicId
+                let url = "https://swarmnet-prod.herokuapp.com/topics/" + i.topicId
                 api.get(url,{
                 method: 'GET',})
                 .then((res)=>{

@@ -1,6 +1,7 @@
 <template>
   <div class="q-pa-md" >
-
+    <div class="row">
+    <div class="col-10">
     <div class="q-gutter-md row">
       <q-select
         filled
@@ -90,63 +91,74 @@
 
       </q-card>
     </q-dialog>
-  </div>
-      <div>
-      <!--- <q-btn  flat round color="primary" icon="fas fa-sync-alt" /> --->
-      </div>  
+  
     
     <div class="q-pa-md" id= "clear" >
-    <q-list bordered padding separator >
-      
-      <q-item 
-        v-for="(post, index) in pos" 
-        :key="post.id" 
-        :to="`/Details/${post.id}`" 
-        active-class="q-item-no-link-highlighting">
-      
-        <q-item-section top avatar>
-          <q-avatar>
-            <img src="https://cdn.quasar.dev/img/boy-avatar.png">
-          </q-avatar>
-        </q-item-section>
+        <q-list bordered padding separator >
+          
+          <q-item 
+            v-for="(post, index) in pos" 
+            :key="post.id" 
+            :to="`/Details/${post.id}`" 
+            active-class="q-item-no-link-highlighting">
+          
+            <q-item-section top avatar>
+              <q-avatar>
+                <img src="https://cdn.quasar.dev/img/boy-avatar.png">
+              </q-avatar>
+            </q-item-section>
 
-        <q-item-section>
-          <q-item-label> <strong> {{post.text}} </strong></q-item-label>
+            <q-item-section>
+              <q-item-label> <strong> {{post.text}} </strong></q-item-label>
 
-          <div class=" q-gutter-md">
-            
-            <q-chip  v-for="tag in posTags[index]" :key="tag"
-                     square color="purple-2" text-color="white" icon="sell" size="md">     
-                {{tag.text}}
-            </q-chip>
-            
-           </div>
-
-          <div class="row justify-between q-mt-sm">
-                <q-btn @click.prevent flat round color="grey" icon="fas fa-comments" size="sm" />
-                <q-btn @click.prevent flat round icon="far fa-eye" size="sm"/>
-                <q-btn @click.prevent flat round  size="sm"
-                   
-                     icon="far fa-heart"
-                    v-bind:class="{'white': !this.data.clicked, 'blue': this.data.clicked}"
-                    v-on:click ="this.data.clicked = !this.data.clicked" 
-                     />
+              <div class=" q-gutter-md">
                 
-          </div> 
-        </q-item-section>
+                <q-chip  v-for="tag in posTags[index]" :key="tag"
+                        square color="purple-2" text-color="white" icon="sell" size="md">     
+                    {{tag.text}}
+                </q-chip>
+                
+                <q-btn @click.prevent flat round color="grey" icon="fas fa-comments" size="sm"
+                      style= " position: absolute; right: 16px;"
+                      @click="prompt = true" />
+              </div>
 
-        <q-item-section side top>
-          <q-item-label caption> {{post.created}} </q-item-label>
-        </q-item-section>
+            </q-item-section>
+
+            <q-item-section side top>
+              <q-item-label caption> {{post.created}} </q-item-label>
+            </q-item-section>
+            
+          
+          </q-item>
+          
+        </q-list>
+
+        <q-dialog v-model="prompt" persistent>
+          <q-card style="min-width: 350px">
+            <q-input  placeholder="Add comment..." v-model="text" counter maxlength="260" autogrow :dense="dense">
+              <template v-slot:after>
+                <q-btn round dense flat icon="send" />
+              </template>
+            </q-input>
+            <q-card-actions align="right" class="text-primary">
+              <q-btn flat label="Cancel" v-close-popup />
+            </q-card-actions>
+          </q-card>
+        </q-dialog>
         
-      
-      </q-item>
-      
-    </q-list>
 
-    <br>
-    
     </div>
+    </div>
+
+    <div class="col" >
+        <div >
+          Your subscriptions are:
+          <subscriptions/>
+        </div>
+      </div>
+  </div>
+  </div>   
 </template>
 
 
@@ -154,9 +166,11 @@
 import {defineComponent, ref} from 'vue';
 import { api } from 'boot/axios'
 import { useQuasar } from 'quasar'
-import { onMounted, onUpdated} from 'vue'
+import { onMounted, onUpdated, watchEffect} from 'vue'
+import Subscriptions from './Subscriptions.vue';
 
 export default defineComponent({
+  components: { Subscriptions },
   name: 'PostBoard',
 
   props:['tabText'], 
@@ -177,11 +191,13 @@ export default defineComponent({
     const automodel = ref(null)
     const options = ref(searchtags)
     const subID = ref('')
+    const sid = ref('')
+    sid.value = props.tabText
 
     /* gets topics to use for q-dialog */
     function loadData () {
     
-    api.get('https://swarmnet-staging.herokuapp.com/topics',{
+    api.get('https://swarmnet-prod.herokuapp.com/topics',{
   method: 'GET',
   
   headers: {
@@ -192,8 +208,7 @@ export default defineComponent({
         data.value = response.data
         
         for (let i of data.value) { 
-          tops.value.push(i)
-         
+          tops.value.push(i)  
         }
       
       /* console.log( tops.value[0].text) */
@@ -211,9 +226,10 @@ export default defineComponent({
 
 
     function getDetails(topic){
+      
       pos.value.splice(0)
 
-      let url = "https://swarmnet-staging.herokuapp.com/posts"
+      let url = "https://swarmnet-prod.herokuapp.com/posts"
       api.get(url,{
       method: 'GET',
       headers: {
@@ -263,7 +279,7 @@ export default defineComponent({
     }
 
     function displayAllPost(){
-          let curl = "https://swarmnet-staging.herokuapp.com/replies"
+          let curl = "https://swarmnet-prod.herokuapp.com/replies"
             api.get(curl,{
             method: 'GET',
             
@@ -288,7 +304,7 @@ export default defineComponent({
             })
 
       
-          let url = "https://swarmnet-staging.herokuapp.com/posts"
+          let url = "https://swarmnet-prod.herokuapp.com/posts"
           
             api.get(url,{
             method: 'GET',
@@ -305,7 +321,6 @@ export default defineComponent({
               for(let k of i.tags){
                 if(searchtags.value.indexOf(k.text) == -1){
                   searchtags.value.push(k.text)
-                  console.log(k.text)
                 }
             }
               pos.value.unshift(i)
@@ -334,7 +349,7 @@ export default defineComponent({
   /* toggles subscription status */
     function  showNotif () {
       console.log(subID.value)
-        let url = `https://swarmnet-staging.herokuapp.com/subscriptions/${subID.value}/status`
+        let url = `https://swarmnet-prod.herokuapp.com/subscriptions/${subID.value}/status`
         console.log(url)
         api.put(url,{
           subId: subID.value
@@ -402,7 +417,7 @@ export default defineComponent({
         ptopid.value = props.tabText
       }
 
-      let url = "https://swarmnet-staging.herokuapp.com/posts"
+      let url = "https://swarmnet-prod.herokuapp.com/posts"
           
             api.post(url,{
               topic_id: ptopid.value,  
@@ -440,7 +455,7 @@ export default defineComponent({
    /* displays subscription status when topic post load */
     function subsStatus(id){
       let found = false
-      api.get('https://swarmnet-staging.herokuapp.com/users/1/subscriptions',{
+      api.get('https://swarmnet-prod.herokuapp.com/users/1/subscriptions',{
       method: 'GET',
       
       headers: {
@@ -471,7 +486,7 @@ export default defineComponent({
               if(found == false){
                 console.log("subscription does not exist")
                 subbed.value = false;
-                 let suburl = "https://swarmnet-staging.herokuapp.com/subscriptions"
+                 let suburl = "https://swarmnet-prod.herokuapp.com/subscriptions"
           
                   api.post(suburl,{
                     topic_id: id,  
@@ -509,7 +524,96 @@ export default defineComponent({
           })
 
     }
+  
+  watchEffect(()=>{
+    console.log("hi")
+    console.log(props.tabText)
+    console.log(sid.value)
 
+    if(props.tabText == 0){
+      pos.value.splice(0)
+      
+      let url = "https://swarmnet-prod.herokuapp.com/posts"
+          
+            api.get(url,{
+            method: 'GET',
+            
+            headers: {
+                    'Access-Control-Allow-Origin': '*'
+                  }
+              })
+            .then((response) => {
+              data.value = response.data
+
+              for (let i of data.value) { 
+               
+            
+                pos.value.unshift(i)
+                 posTags.value.unshift(i.tags)
+              for (let j of comments.value){
+              if(i.id == j.id){
+                pos.value.shift()
+                 posTags.value.shift()
+              }
+            }
+            }
+            })
+            .catch(() => {
+              $q.notify({
+                color: 'negative',
+                position: 'top',
+                message: 'Loading failed',
+                icon: 'report_problem'
+              })
+            })
+    }
+    else{
+      pos.value.splice(0)
+      let url = "https://swarmnet-prod.herokuapp.com/posts"
+      api.get(url,{
+      method: 'GET',
+      headers: {
+              'Access-Control-Allow-Origin': '*'
+            }
+        })
+      .then((response) => {
+        data.value = response.data
+
+        for (let i of data.value) { 
+          if(i.topicId == parseInt(props.tabText)){
+            
+            pos.value.unshift(i)
+            posTags.value.unshift(i.tags)
+          for(let j of comments.value){
+            if(i.id == j.id ){
+              pos.value.shift()
+              posTags.value.shift()
+            }
+            }
+          }
+        }
+
+        console.log(pos.value)
+
+        for(let j of tops.value){
+          if(j.id == parseInt(props.tabText)){
+            ptabtext.value = j.text
+          }     
+        }  
+           })
+      .catch(() => {
+        $q.notify({
+          color: 'negative',
+          position: 'top',
+          message: 'Loading failed',
+          icon: 'report_problem'
+        })
+      })
+    }
+     
+      //  subsStatus(props.tabText);
+   
+  });
 
   onMounted(() => {
       displayAllPost();
@@ -517,11 +621,12 @@ export default defineComponent({
     })
   
   onUpdated(()=> {
-    getDetails(props.tabText); 
+    props.tabText; 
   })
  
 
     return {
+      prompt: ref(false),
       modelMultiple: ref(),
       automodel,
       options,
@@ -581,6 +686,11 @@ export default defineComponent({
 })
 </script>
 
+<style lang="sass" scoped>
+.my-card
+  width: 100%
+  max-width: 300px
+</style>
 
 
 

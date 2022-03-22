@@ -36,7 +36,7 @@
     <q-drawer v-model="leftDrawerOpen" show-if-above class="bg-primary text-white">
       <!-- drawer content -->
 
-    <q-item to="/" active-class="q-item-no-link-highlighting">
+    <q-item to="/home" active-class="q-item-no-link-highlighting">
           <q-item-section avatar>
             <q-icon name="menu"/>
           </q-item-section>
@@ -48,7 +48,7 @@
         <q-separator color="orange" inset />
         
         <q-list>
-         <q-item to="/" active-class="q-item-no-link-highlighting">
+         <q-item to="/home" active-class="q-item-no-link-highlighting">
           <q-item-section avatar>
             <q-icon name="fas fa-arrow-circle-left" />
           </q-item-section>

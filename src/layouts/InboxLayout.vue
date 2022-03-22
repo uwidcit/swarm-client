@@ -1,71 +1,92 @@
-<template >
-  <q-layout view="hHh lpR fFf">
+<template>
+  <div class="q-pa-md">
+    <q-layout view="lHh Lpr lff"  class="shadow-2 rounded-borders">
+      <q-header elevated class="bg-cyan-10">
+        <q-toolbar>
+          <q-toolbar-title>Swarn Net</q-toolbar-title>
+          <q-btn flat @click="drawer = !drawer" round dense icon="menu" />
+        </q-toolbar>
+      </q-header>
 
-    <q-drawer show-if-above v-model="leftDrawerOpen" side="left" bordered>
-      <q-card class="my-card">
-      <q-item>
-        <q-item-section avatar>
-          <q-avatar>
-            <img src="https://cdn.quasar.dev/img/boy-avatar.png">
-          </q-avatar>
-        </q-item-section>
-        
-      </q-item>
+      <q-drawer
+        v-model="drawer"
+        show-if-above
+        :width="200"
+        :breakpoint="400"
+      >
+        <q-scroll-area style="height: calc(100% - 150px); margin-top: 150px; border-right: 1px solid #ddd">
+          <q-list padding>
+            <q-item clickable v-ripple>
+              <q-item-section avatar>
+                <q-icon name="inbox" />
+              </q-item-section>
 
-      <q-separator />
-        
-        <q-item-section>
-          <q-item-label >Title</q-item-label>
-          <q-item-label caption>Subhead</q-item-label>
-        </q-item-section>
+              <q-item-section>
+                Inbox
+              </q-item-section>
+            </q-item>
 
-    </q-card>
+            <q-item to='/home' active clickable v-ripple>
+              <q-item-section avatar>
+                <q-icon name="star" />
+              </q-item-section>
 
-      <q-tabs align="left"  vertical>
-        <q-route-tab to="/home" label="Home" />
-        <q-route-tab  label="Inbox" />
-        <q-route-tab  label="Read" />
-      </q-tabs>
-    </q-drawer>
+              <q-item-section>
+               Home
+              </q-item-section>
+            </q-item>
 
-    <q-page-container>
-      <inbox/>
-      <router-view />
-    </q-page-container>
+            <q-item clickable v-ripple>
+              <q-item-section avatar>
+                <q-icon name="send" />
+              </q-item-section>
 
-  </q-layout>
+              <q-item-section>
+                Send
+              </q-item-section>
+            </q-item>
+
+            <q-item clickable v-ripple>
+              <q-item-section avatar>
+                <q-icon name="drafts" />
+              </q-item-section>
+
+              <q-item-section>
+                Drafts
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-scroll-area>
+
+        <q-img class="absolute-top" src="https://cdn.quasar.dev/img/material.png" style="height: 150px">
+          <div class="absolute-bottom bg-transparent">
+            <q-avatar size="56px" class="q-mb-sm">
+              <img src="https://cdn.quasar.dev/img/boy-avatar.png">
+            </q-avatar>
+            <div class="text-weight-bold">Cels Lewis</div>
+            <div>@cels_lewie</div>
+          </div>
+        </q-img>
+      </q-drawer>
+
+      <q-page-container>
+        <inbox/>
+      </q-page-container>
+    </q-layout>
+  </div>
 </template>
 
 <script>
-import { ref } from 'vue'
 import Inbox from 'src/pages/Inbox.vue'
-import { defineComponent } from 'vue'
-export default defineComponent({
+import { ref } from 'vue'
+export default {
+  components: { Inbox },
 
-  components: {
-    Inbox
-},
-
-  setup () {
-    const leftDrawerOpen = ref(false)
-
+   setup () {
     return {
-      leftDrawerOpen,
-      toggleLeftDrawer () {
-        leftDrawerOpen.value = !leftDrawerOpen.value
-      }
+      drawer: ref(false)
     }
   }
-})
-
-</script>
-
-<style>
-.bg-purple {
-    color: #fff;
-    background: -webkit-linear-gradient(110deg, #a60af3 40%, rgba(0, 0, 0, 0) 30%), -webkit-radial-gradient(farthest-corner at 0% 0%, #7a00cc 70%, #c03fff 70%);
-    background: -o-linear-gradient(110deg, #a60af3 40%, rgba(0, 0, 0, 0) 30%), -o-radial-gradient(farthest-corner at 0% 0%, #7a00cc 70%, #c03fff 70%);
-    background: -moz-linear-gradient(110deg, #a60af3 40%, rgba(0, 0, 0, 0) 30%), -moz-radial-gradient(farthest-corner at 0% 0%, #7a00cc 70%, #c03fff 70%);
-    background: linear-gradient(110deg, #a60af3 40%, rgba(0, 0, 0, 0) 30%), radial-gradient(farthest-corner at 0% 0%, #7a00cc 70%, #c03fff 70%);
+  
 }
-</style>
+</script>

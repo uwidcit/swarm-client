@@ -12,7 +12,6 @@
 
         <q-item-section>
           <q-item-label> <strong> {{title}} </strong></q-item-label>
-          <br/>
 
            <div class=" q-gutter-md">
             <q-chip square color="purple-2" text-color="white" icon="sell" size="md"
@@ -20,14 +19,11 @@
                     :key="tags.id">
               {{tags.text}}
             </q-chip>
+
+            <q-btn flat round color="grey" icon="fas fa-comments" size="sm" 
+                    class="position = absolute"/>
            </div>
 
-          <div class="row justify-between q-mt-sm">
-                <q-btn flat round color="grey" icon="fas fa-comments" size="sm" />
-                <q-btn flat round icon="far fa-eye" size="sm"/>
-                <q-btn flat round icon="far fa-heart" size="sm" />
-                
-          </div> 
         </q-item-section>
 
         <q-item-section side top>
@@ -38,11 +34,10 @@
     </q-list>
 </div>
 
-<div id="rcorners"><h5 class="text-italic">Comments</h5></div>
-
 <div v-for="c in testdata" :key="c.id" style="margin-left: 40px">
   <comments  :label="c.text" :nodes="c.tags" :depth="0" ></comments>
 </div>
+
 
 </template>
 
@@ -103,7 +98,7 @@ export default defineComponent({
 
       function loadPosts(){
          
-         let url = "https://swarmnet-staging.herokuapp.com/posts/" + route.params.id
+         let url = "https://swarmnet-prod.herokuapp.com/posts/" + route.params.id
          
           api.get(url,{
           method: 'GET',
@@ -132,7 +127,7 @@ export default defineComponent({
 
       function loadComments(){
          
-         let url = "https://swarmnet-staging.herokuapp.com/replies"
+         let url = "https://swarmnet-prod.herokuapp.com/replies"
          
           api.get(url,{
           method: 'GET',
@@ -170,7 +165,7 @@ export default defineComponent({
       function showComments(id){
         this.comments.slice(0);
 
-         let url = "https://swarmnet-staging.herokuapp.com/replies"
+         let url = "https://swarmnet-prod.herokuapp.com/replies"
          
           api.get(url,{
           method: 'GET',

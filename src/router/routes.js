@@ -3,8 +3,7 @@ const routes = [
     path: '/home',
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      {path: '/home', component: () => import('pages/Dashboard.vue') ,props: true},
-      {path: '/home', component: () => import('pages/UserFeed.vue') ,props: true},
+      { path: '/home', component: () => import('pages/Dashboard.vue'), props: true },
       {path: '/Dashboard2', component: () => import('pages/Dashboard2.vue')},
       {path: '/Profile', component: () => import('pages/UserProfile.vue')},
       {path: '/Map', component: () => import('pages/Map.vue')},
@@ -68,16 +67,13 @@ const routes = [
   },
   {
     path: '/',
-    component: () => import('pages/Login-1.vue')
+    component: () => import('src/pages/Login.vue')
   },
   {
-    path: '/Lock',
-    component: () => import('pages/LockScreen.vue')
+    path: '/createaccount',
+    component: () => import('pages/CreateAccount.vue')
   },
-  {
-    path: '/Lock-2',
-    component: () => import('pages/LockScreen-2.vue')
-  }
+  
 ]
 
 export default routes

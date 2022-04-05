@@ -3,33 +3,22 @@
     <div class="row">
     <div class="col-10">
     <div class="q-gutter-md row">
-      <q-select
+      <q-input
+        v-model="search"
+        debounce="500"
         filled
-        :model-value="automodel"
-        use-input
-        hide-selected
-        fill-input
-        input-debounce="0"
-        :options="options"
-        @filter="filterFn"
-        @input-value="setModel"
+        placeholder="Search Post by Tags"
         style="width: 350px; padding-bottom: 32px"
-        @click="searchByTags(options.values)"
+        @keyup.enter="searchByTags(search)"
       >
-        <template v-slot:no-option>
-          <q-item>
-            <q-item-section class="text-grey">
-              No results
-            </q-item-section>
-          </q-item>
+        <template v-slot:prepend>
+          <q-icon name="search" />
         </template>
-
-        <template v-slot:prepend>           
-          <q-icon name="search" />          
+        <template v-slot:append>
+          <q-btn icon="fas fa-times" flat round @click="search='', getDetails(topicInfo)" />
         </template>
-
-
-      </q-select>
+      </q-input>
+      
     </div>
 
       <q-toggle
@@ -37,10 +26,12 @@
         checked-icon="check"
         color="red"
         unchecked-icon="clear"
-        v-on:click="showNotif"
+        v-on:click="toggleSub"
       />
     
+   
     <q-btn fab flat round icon="far fa-edit" color="accent" size="xs" fab-mini @click="fixed = true"/>
+    
 
      <q-dialog v-model="fixed" no-refocus>
       <q-card style="width: 600px; height: 400px; background-color: powderblue;">
@@ -152,21 +143,18 @@
     </div>
 
     <div class="col" >
-        <div >
-          Your subscriptions are:
-          <subscriptions/>
-        </div>
+        
       </div>
   </div>
-  </div>   
+  </div>  
+
 </template>
 
 
 <script>
-import {defineComponent, ref} from 'vue';
+import {defineComponent, ref, onMounted, onUpdated, watchEffect } from 'vue';
 import { api } from 'boot/axios'
 import { useQuasar } from 'quasar'
-import { onMounted, onUpdated, watchEffect} from 'vue'
 import Subscriptions from './Subscriptions.vue';
 
 export default defineComponent({
@@ -174,6 +162,24 @@ export default defineComponent({
   name: 'PostBoard',
 
   props:['tabText'], 
+
+  data() {
+    return {
+      isConnected: false,
+      socketMessage: ''
+    }
+  },
+
+  sockets: {
+    connect() {
+      // Fired when the socket connects.
+      this.isConnected = true;
+    },
+
+    disconnect() {
+      this.isConnected = false;
+    },
+  },
 
   setup (props) {
     const $q = useQuasar()
@@ -187,12 +193,11 @@ export default defineComponent({
     const comments = ref([])
     const ptabtext = ref('')
     const ptopid = ref('')
-    const searchtags = ref([])
-    const automodel = ref(null)
-    const options = ref(searchtags)
+    const search = ref('')
     const subID = ref('')
-    const sid = ref('')
-    sid.value = props.tabText
+    const topicInfo = ref('')
+
+    
 
     /* gets topics to use for q-dialog */
     function loadData () {
@@ -224,10 +229,51 @@ export default defineComponent({
       })
   }
 
-
+    /* filters post to get only post about the selected topic */
     function getDetails(topic){
       
       pos.value.splice(0)
+
+      if(topic == 0){
+      pos.value.splice(0)
+      
+      let url = "https://swarmnet-prod.herokuapp.com/posts"
+          
+            api.get(url,{
+            method: 'GET',
+            
+            headers: {
+                    'Access-Control-Allow-Origin': '*'
+                  }
+              })
+            .then((response) => {
+              data.value = response.data
+
+              for (let i of data.value) { 
+               
+            
+                pos.value.unshift(i)
+                 posTags.value.unshift(i.tags)
+              for (let j of comments.value){
+              if(i.id == j.id){
+                pos.value.shift()
+                 posTags.value.shift()
+              }
+            }
+            }
+            
+            })
+            .catch(() => {
+              $q.notify({
+                color: 'negative',
+                position: 'top',
+                message: 'Loading failed',
+                icon: 'report_problem'
+              })
+            })
+    }
+      
+      else{
 
       let url = "https://swarmnet-prod.herokuapp.com/posts"
       api.get(url,{
@@ -243,7 +289,7 @@ export default defineComponent({
           if(i.topicId == parseInt(topic)){
             pos.value.unshift(i)
             posTags.value.unshift(i.tags)
-          for(let j of comments.value){
+          for(let j of comments.value){ /*remove comments from array with top level post */
             if(i.id == j.id ){
               pos.value.shift()
               posTags.value.shift()
@@ -259,8 +305,7 @@ export default defineComponent({
             ptabtext.value = j.text
           }     
         }   
-        
-        subsStatus(props.tabText);
+      
       })
       .catch(() => {
         $q.notify({
@@ -270,14 +315,10 @@ export default defineComponent({
           icon: 'report_problem'
         })
       })
-
       }
-
-    function searchByTags(topicNmae){
-      console.log("function called")
-      console.log(topicNmae)
-    }
-
+      }
+    
+    /* displays all post after user logins in */
     function displayAllPost(){
           let curl = "https://swarmnet-prod.herokuapp.com/replies"
             api.get(curl,{
@@ -290,7 +331,7 @@ export default defineComponent({
             .then((response) => {
               data.value = response.data
               
-            for (let i of data.value) { 
+            for (let i of data.value) {  /*add all replies to an array */
                 comments.value.push(i)
               }
             })
@@ -302,7 +343,6 @@ export default defineComponent({
                 icon: 'report_problem'
               })
             })
-
       
           let url = "https://swarmnet-prod.herokuapp.com/posts"
           
@@ -314,26 +354,20 @@ export default defineComponent({
                   }
               })
             .then((response) => {
-              data.value = response.data
-
+              data.value = response.data /* get all post */
               
-            for (let i of data.value) { 
-              for(let k of i.tags){
-                if(searchtags.value.indexOf(k.text) == -1){
-                  searchtags.value.push(k.text)
-                }
-            }
-              pos.value.unshift(i)
-              posTags.value.unshift(i.tags)
+            for (let i of data.value) {  /* filter post from replies */
+                pos.value.unshift(i)  /*the unshift() function adds one or more items to the start of an array*/
+                posTags.value.unshift(i.tags)
+                 
               for(let j of comments.value){
                 if(i.id == j.id){
-                  pos.value.shift()
-                  posTags.value.shift()
+                  pos.value.shift(i)  
+                  posTags.value.shift(i.tags)
                 }  
               }
               }
-              console.log(posTags.value)
-            
+             
             })
             .catch(() => {
               $q.notify({
@@ -343,73 +377,144 @@ export default defineComponent({
                 icon: 'report_problem'
               })
             })
-
-        }
+        } 
     
-  /* toggles subscription status */
-    function  showNotif () {
-      console.log(subID.value)
-        let url = `https://swarmnet-prod.herokuapp.com/subscriptions/${subID.value}/status`
-        console.log(url)
-        api.put(url,{
-          subId: subID.value
-        },
-        {
-            method: 'PUT',
+    /*get all top level post with a partciular tag*/
+    function searchByTags(searchTag){
+   
+      let url = `https://swarmnet-prod.herokuapp.com/posts/${searchTag}`
+      console.log(url)
+            api.get(url,{
+            method: 'GET',
             
             headers: {
                     'Access-Control-Allow-Origin': '*',
-                    Authorization:'JWT '+ localStorage.getItem('token'),
-                    }
-                })
-          .then((response) => { 
-              if(response.status == 200){
-                let staturl = "https://swarmnet-staging.herokuapp.com/subscriptions/" + subID.value
-                api.get(staturl,{
-                method: 'GET',
-                
-                headers: {
-                        'Access-Control-Allow-Origin': '*',
-                        Authorization:'JWT '+ localStorage.getItem('token'),
-                        }
-                    })
-                    .then((response) => {
-                        data.value = response.data
+                  },
+  
+            })
+            .then((response) => {
               
-                            if(data.value.status == true){
-                              $q.notify({
-                                  message: 'SUBSCRIBBED',
-                                  color: 'primary',
-                                  avatar: 'https://cdn.quasar.dev/img/boy-avatar.png',
-                                  actions: [
-                                    { label: 'Dismiss', color: 'white', handler: () => { /* ... */ } }
-                                  ]
-                                })
-                              subbed.value = true;
-                            }
-    
-                    })
-                    .catch(() => {
-                        $q.notify({
-                        color: 'negative',
-                        position: 'top',
-                        message: 'Loading failed',
-                        icon: 'report_problem'
-                        })
-                    })
+              data.value = response.data
+              console.log(data.value)
 
-              }         
-          })
-          .catch(() => {
-              $q.notify({
-              color: 'negative',
-              position: 'top',
-              message: 'Loading failed',
-              icon: 'report_problem'
-              })
-          })
-    
+              /* display search list */
+              pos.value.splice(0)
+              for (let i of data.value) { 
+                  pos.value.unshift(i)
+                  posTags.value.unshift(i.tags)
+                for(let j of comments.value){
+                  if(i.id == j.id ){
+                    pos.value.shift()
+                    posTags.value.shift()
+                  }
+                  }      
         }
+            })
+            .catch(() => {
+              $q.notify({
+                color: 'negative',
+                position: 'top',
+                message: 'No post with such tag found',
+                icon: 'report_problem'
+              })
+            })
+    }
+    
+  /* toggles subscription status */
+    function  toggleSub() {
+      console.log("clicked")
+       let url = `https://swarmnet-prod.herokuapp.com/subscriptions/topic/${props.tabText}`
+          
+            api.get(url,
+              {
+                headers: {
+                  Authorization:'JWT '+ localStorage.getItem('token'),
+                  'Access-Control-Allow-Origin': '*'
+                  
+                }
+              }
+              )
+            .then((response) => {
+              data.value = response.data
+              console.log(data.value)
+              
+              /* toogle subscription status */
+                api.put(`https://swarmnet-prod.herokuapp.com/subscriptions/${data.value.id}/status`,
+                {
+                headers: {
+                  'Authorization':'JWT '+ localStorage.getItem('token'),
+                  'Access-Control-Allow-Origin': '*'
+                }
+              })
+                  .then((response) => { 
+                    if(response.status == 200){ /*user is opposite of previous state */
+                        subbed.value = !subbed.value
+                        console.log("new sub status")
+                        console.log(subbed.value)
+                    }
+                          
+                  })
+                  .catch(() => {
+                      $q.notify({
+                      color: 'negative',
+                      position: 'top',
+                      message: 'Loading failed',
+                      icon: 'report_problem'
+                      })
+                  })
+  
+            })
+            .catch(() => {
+              $q.notify({
+                color: 'negative',
+                position: 'top',
+                message: 'Loading failed',
+                icon: 'report_problem'
+              })
+            }) 
+      
+    
+    }
+
+  /*shows subscription status */
+    function displaySub(){
+
+       let url = `https://swarmnet-prod.herokuapp.com/subscriptions/topic/${props.tabText}`
+          
+            api.get(url,
+              {
+                headers: {
+                  Authorization:'JWT '+ localStorage.getItem('token'),
+                  'Access-Control-Allow-Origin': '*'
+                  
+                }
+              }
+              )
+            .then((response) => {
+              data.value = response.data
+              console.log(data.value)
+
+              if(data.value.status == 1){ /*user is subscribed */
+                 console.log("eneter")
+                 console.log(subbed)
+                 subbed.value = true
+              }
+
+              if(data.value.status == 0){ /*user is not subscribed */
+                 subbed.value = false
+              }
+  
+            })
+            .catch(() => {
+              $q.notify({
+                color: 'negative',
+                position: 'top',
+                message: 'Loading failed',
+                icon: 'report_problem'
+              })
+            }) 
+      
+    }      
     
     /* creates new post using q-dialog*/ 
     function postPost(text, tags){
@@ -451,84 +556,10 @@ export default defineComponent({
               })
             }) 
     }     
-
-   /* displays subscription status when topic post load */
-    function subsStatus(id){
-      let found = false
-      api.get('https://swarmnet-prod.herokuapp.com/users/1/subscriptions',{
-      method: 'GET',
-      
-      headers: {
-              'Access-Control-Allow-Origin': '*',
-              Authorization:'JWT '+ localStorage.getItem('token'),
-              }
-          })
-          .then((response) => {
-              data.value = response.data
-              
-              for(let i of data.value){
-                if(i.topicId == id){
-                  console.log("subscription already created")
-                  subID.value = i.id;
-                  found = true;
-
-                  if(i.status == true){
-                    console.log(true)
-                    subbed.value = true;
-                  }
-                  else{
-                    subbed.value = false;
-                  }
-                  
-                }
-              }
-              /* subscription not found, create one */
-              if(found == false){
-                console.log("subscription does not exist")
-                subbed.value = false;
-                 let suburl = "https://swarmnet-prod.herokuapp.com/subscriptions"
-          
-                  api.post(suburl,{
-                    topic_id: id,  
-                    },
-                    {
-                      headers: {
-                        Authorization:'JWT '+ localStorage.getItem('token'),
-                        'Access-Control-Allow-Origin': '*'                       
-                      }
-                    }
-                    )
-                  .then((response) => {
-                    if(response.data == "created"){
-                     console.log("Subscription created")
-                     subbed.value = false;
-                    }
-                  })
-                  .catch(() => {
-                    $q.notify({
-                      color: 'negative',
-                      position: 'top',
-                      message: 'Loading failed',
-                      icon: 'report_problem'
-                    })
-                  }) 
-                    }  
-                })
-          .catch(() => {
-              $q.notify({
-              color: 'negative',
-              position: 'top',
-              message: 'Loading failed',
-              icon: 'report_problem'
-              })
-          })
-
-    }
   
   watchEffect(()=>{
-    console.log("hi")
     console.log(props.tabText)
-    console.log(sid.value)
+    topicInfo.value = props.tabText
 
     if(props.tabText == 0){
       pos.value.splice(0)
@@ -557,6 +588,7 @@ export default defineComponent({
               }
             }
             }
+            
             })
             .catch(() => {
               $q.notify({
@@ -600,6 +632,12 @@ export default defineComponent({
             ptabtext.value = j.text
           }     
         }  
+
+        console.log(props.tabText);
+
+        displaySub()
+
+       
            })
       .catch(() => {
         $q.notify({
@@ -616,35 +654,22 @@ export default defineComponent({
   });
 
   onMounted(() => {
+      loadData();
       displayAllPost();
-      loadData(); 
     })
   
   onUpdated(()=> {
     props.tabText; 
   })
- 
 
     return {
-      prompt: ref(false),
-      modelMultiple: ref(),
-      automodel,
-      options,
-      searchtags,
-
-      filterFn (val, update, abort) {
-        update(() => {
-          const needle = val.toLocaleLowerCase()
-          options.value = searchtags.value.filter(v => v.toLocaleLowerCase().indexOf(needle) > -1)
-        })
-      },
-
-      setModel (val) {
-        automodel.value = val
-      },
+        prompt: ref(false),
+        modelMultiple: ref(),
+        topicInfo,
+        search,
         searchByTags,
+        toggleSub,
         data, 
-        displayAllPost,
         loadData,
         tops,
         pos,
@@ -653,8 +678,7 @@ export default defineComponent({
         ptabtext,
         postPost,
         ptopid,
-        subsStatus,
-        
+       
         model,
         subbed,
         fixed: ref(false),
@@ -662,8 +686,6 @@ export default defineComponent({
         ph: ref(''),
         dense: ref(false),
         tab,
-    
-       showNotif,
 
 
       triggerPositive () {

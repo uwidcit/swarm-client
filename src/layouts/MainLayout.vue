@@ -44,10 +44,9 @@
         <q-tab v-for="topic in tops" :key="topic.id" :label="topic.text" @click="tagText=topic.id" />
          
            
-      </q-tabs>
-       
+      </q-tabs>       
      </div>
-     
+  
      <q-space/>
 
       <div class="q-gutter-sm row items-center no-wrap ">
@@ -121,17 +120,6 @@
           </q-item-section>
           <q-item-section>
             <q-item-label>Post Board</q-item-label>
-          </q-item-section>
-         
-        </q-item>
-
-         <q-item to="/home"  active-class="q-item-no-link-highlighting" @click="ok = false">
-
-          <q-item-section avatar>
-            <q-icon name="account_box"/>
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>My Feed</q-item-label>
           </q-item-section>
          
         </q-item>
@@ -432,14 +420,10 @@ Over 6500 Police Officers in varying ranks and Special Reserved Police support t
       </q-card>
     </q-dialog>
 
-    <q-page-container  v-if="ok" class="bg-grey-2"> 
+    <q-page-container class="bg-grey-2"> 
        <post-board :tabText="tagText"/>
     </q-page-container>
 
-    <q-page-container  v-else class="bg-grey-2"> 
-       <user-feed/>
-    </q-page-container>
-    
     
   </q-layout>
 </template>
@@ -449,32 +433,31 @@ Over 6500 Police Officers in varying ranks and Special Reserved Police support t
 import EssentialLink from 'components/EssentialLink.vue'
 import PostBoard from 'components/PostBoard.vue';
 
-import { defineComponent, ref } from 'vue'
+import { defineComponent, ref} from 'vue'
 import { api } from 'boot/axios'
 import { useQuasar } from 'quasar'
 import { onMounted} from 'vue'
 import Inbox from 'src/pages/Inbox.vue';
-import Subscriptions from 'src/components/Subscriptions.vue';
-import UserFeed from 'src/pages/UserFeed.vue';
+const io = require('socket.io-client')
 
 export default defineComponent({
   name: 'MainLayout',
-
-
   components: {
     EssentialLink,
     PostBoard,
     Inbox,
-    Subscriptions,
-    UserFeed,
   },
 
   data () {
     return {
-      tagText: 'Hi from data',
+      messages: [],
+      socket: io.connect('wss://8080-uwidcit-swarmnetbackend-c20l2b6i6kj.ws-us38.gitpod.io/:8080',{
+         transports:["websocket"]
+      }),
+      tagText: '0',
       text: '',
       tag: '',
-      ok: true,
+    
       dialogVis: false,
       dialogPos: {
         x: 0,
@@ -483,7 +466,20 @@ export default defineComponent({
     }
   },
 
+ 
+  mounted() {
+    console.log(`the component is now mounted.`)
 
+      this.socket.on('connect', (socket)=>{
+        this.messages = socket;
+        console.log(this.messages)
+      
+        //this.socket.send("user connected")
+        
+      })
+    console.log(`finished`)  
+  },
+   
 
   computed: {
     dialogStyle() {
@@ -512,6 +508,7 @@ export default defineComponent({
     const data = ref(null)
     const tops = ref([])
     const tab = ref('flooding')
+    const subList = ref([])
    
     
     function loadData () {
@@ -527,12 +524,13 @@ export default defineComponent({
         data.value = response.data
         
         for (let i of data.value) { 
-          tops.value.push(i)
-         
+          tops.value.push(i)  
         }
       
-      /* console.log( tops.value[0].text) */
+      console.log( tops.value[0].text) 
        console.log(tops) 
+
+       test()
       })
       .catch(() => {
         $q.notify({
@@ -544,12 +542,98 @@ export default defineComponent({
       })
   }
 
+    /* displays subscription when topic is clicked once*/
+    function createSubs(id){
+      /* create subscription */   
+      console.log("Sub: "+ id)
+      let suburl = "https://swarmnet-prod.herokuapp.com/subscriptions"
+
+        api.post(suburl,{
+          topic_id: id,  
+          },
+          {
+            headers: {
+              Authorization:'JWT '+ localStorage.getItem('token'),
+              'Access-Control-Allow-Origin': '*'                       
+            }
+          }
+          )
+        .then((response) => {
+          if(response.data == "created"){
+            console.log("Subscription created")
+          }
+        })
+        .catch(() => {
+          $q.notify({
+            color: 'negative',
+            position: 'top',
+            message: 'Loading failed',
+            icon: 'report_problem'
+          })
+        }) 
+                   
+}
+
+function test(){
+  let found = false
+  let suburl = "https://swarmnet-prod.herokuapp.com/subscriptions"
+
+        api.get(suburl,
+          {
+            headers: {
+              Authorization:'JWT '+ localStorage.getItem('token'),
+              'Access-Control-Allow-Origin': '*'                       
+            }
+          }
+          )
+        .then((response) => {
+          data.value = response.data
+
+          for (let i of data.value) {
+            subList.value.push(i) 
+          }
+         
+          for(let j of tops.value){ /* loop through list of topics */
+           
+            for(let k of subList.value){ /* inner loop for list of subscribed topics */
+              //console.log(j.id)
+              if(j.id == k.topicId){ /*if a topic already has a subscription, then set found to true */
+                // console.log(j.text)
+                 found = true
+              }
+            }
+           
+            if(found == false){ /* if found is false, then create a subscription*/
+            //  console.log(found)
+              createSubs(j.id)
+            }
+            else{ /* if found is true, reset it to false*/
+              found = false 
+            }  
+          }
+        })
+        .catch(() => {
+          $q.notify({
+            color: 'negative',
+            position: 'top',
+            message: 'Loading failed',
+            icon: 'report_problem'
+          })
+        }) 
+  
+ 
+  
+}
+
   onMounted(() => {
       loadData();
+      console.log("hi")
     })
     
 
     return {
+      test,
+      createSubs,
       data, 
       loadData,
       tops,

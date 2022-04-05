@@ -1,26 +1,32 @@
 <template>
   <div >
-    <div class="q-mr-sm " :style="indent" @click="toggleChildren" id="rcorners3">
+    <div class="q-mr-sm " :style="indent" @click="toggleChildren" id="rcorners3" >
       
-      <span>
-        <q-avatar>
+      <span >
+        <q-avatar >
               <img src="https://cdn.quasar.dev/img/boy-avatar.png">
             </q-avatar>
             {{ label }}
       </span>
       
           <span style="postiton: right">
-            <q-btn @click.prevent flat round color="grey" icon="fas fa-comments" size="sm"/>
-            <q-btn @click.prevent.stop flat round icon="fas fa-plus-circle"   @click="toggleReplies(), createNewComment()" />
+            <q-btn @click.prevent flat round color="grey" icon="fas fa-comments" size="sm" />
+            <q-btn @click.prevent.stop flat round icon="fas fa-plus-circle"   @click="toggleReplies()" />
           </span>
       </div>
 
-      <div v-if="createReply" id="newreply" :style="indent" :depth="depth + 1">
+      <div v-if="createReply" id="newreply" :style="indent" :depth="depth + 1" style="min-width: 250px; max-width: 700px">
         <q-input  placeholder="Add comment..." v-model="text" counter maxlength="260" autogrow :dense="dense">
         <template v-slot:after>
-          <q-btn round dense flat icon="send" />
+          <q-btn round dense flat icon="send" @click="createNewComment(text)" />
+          <q-btn round dense flat icon="cancel" @click="createNewComment(text)" />
+        </template>
+        <template v-slot:under>
+          <q-btn round dense flat icon="send" @click="createNewComment(text)" />
+          <q-btn round dense flat icon="cancel" @click="createNewComment(text)" />
         </template>
         </q-input>
+
       </div>
 
 
@@ -28,9 +34,11 @@
       v-if="showChildren"
       v-for="(node, index) in nodes" 
       :key="index"
-      :nodes="node.nodes" 
+      :nodes="node.replies" 
       :label="node.text"
       :depth="depth + 1"
+      :id="node.id"
+      :topic="node.topicId" 
     >
     </comments>
   </div>
@@ -38,10 +46,13 @@
 
 
 <script>
+import {ref, inject} from 'vue';
+import { api } from 'boot/axios'
+import { useQuasar } from 'quasar'
 
   export default { 
 
-    props: [ 'label', 'nodes', 'depth' ],
+    props: [ 'label', 'nodes', 'depth', 'id', 'topic' ],
    
     data() {
       return { 
@@ -67,14 +78,61 @@
     },
 
     setup(props) {
+      const text = ref('')
+      const $q = useQuasar()
       
-      function createNewComment(){
+      function createNewComment(message){
         console.log("creating new comment")
-        
+        console.log(message)
+
+      /*  api.post("https://8080-uwidcit-swarmnetbackend-c20l2b6i6kj.ws-us38.gitpod.io/replies", {
+          "topic_id": props.topic,
+          "text": message,
+          "replyTo": props.id,
+          "tags": [],
+          "composed": "2011-10-10T14:48:00Z"
+        },{
+          headers: {
+            Authorization:'JWT '+ localStorage.getItem('token'),
+            'Access-Control-Allow-Origin': '*'   
+          }
+          }).then((response) => {
+            if(response.status == 200){
+              showChildren = true
+
+              /* notify user 
+              $q.notify({
+              type: 'positive',
+              message: 'COMMENT POSTED'
+            })
+            // simulate delay
+            setTimeout(() => {
+              notif({
+                type: 'positive',
+                message: 'Found the results that you were looking for',
+                timeout: 1000
+              })
+            }, 4000)
+
+        } 
+     
+    })
+          .catch(() => {
+            $q.notify({
+              color: 'negative',
+              position: 'top',
+              message: 'Incorrect e-mail or password!',
+              icon: 'report_problem'
+            })
+          })
+       
+      
+           */
       }
 
     return{
       createNewComment,
+      text,
     }
 
   }
@@ -101,5 +159,6 @@
   position: relative;
   left: 40px;
 }
+
 </style>
 

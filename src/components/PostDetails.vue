@@ -1,7 +1,7 @@
 <template>
 
 <div class="q-pa-md" >
-    <q-list bordered padding>
+    <q-list bordered padding >
 
       <q-item >
         <q-item-section top avatar>
@@ -34,16 +34,17 @@
     </q-list>
 </div>
 
-<div v-for="c in testdata" :key="c.id" style="margin-left: 40px">
-  <comments  :label="c.text" :nodes="c.tags" :depth="0" ></comments>
+<div  v-for="c in testdata" :key="c.id" style="margin-left: 40px">
+  <comments :label="c.text" :nodes="c.replies" :depth="0"  :id="c.id" :topic="c.topicId"></comments>
 </div>
+
 
 
 </template>
 
 <script>
 import Comments from 'components/Comments.vue'
-import { ref, defineComponent, watch } from 'vue'
+import { ref, defineComponent, provide } from 'vue'
 import { api } from 'boot/axios'
 import { useQuasar } from 'quasar'
 import { onMounted} from 'vue'
@@ -52,7 +53,7 @@ import { useRoute } from 'vue-router'
 export default defineComponent({
     
      name: 'PostDetails',
-     props: [ 'label', 'nodes', 'depth' ],
+     props: [ 'label', 'nodes', 'depth', 'id', 'topic' ],
 
      components: {
       Comments
@@ -73,28 +74,6 @@ export default defineComponent({
       const postTags = ref([])
       const commTags = ref([])
       const testdata = ref([])
-      const tree = ref({label: 'root',
-                        nodes: [
-                          {
-                            label: 'item1',
-                            nodes: [
-                              {
-                                label: 'item1.1'
-                              },
-                              {
-                                label: 'item1.2',
-                                nodes: [
-                                  {
-                                    label: 'item1.2.1'
-                                  }
-                                ]
-                              }
-                            ]
-                          }, 
-                          {
-                            label: 'item2'  
-                          }
-                        ]})
 
       function loadPosts(){
          
@@ -126,7 +105,6 @@ export default defineComponent({
       }
 
       function loadComments(){
-         
          let url = "https://swarmnet-prod.herokuapp.com/replies"
          
           api.get(url,{
@@ -140,8 +118,13 @@ export default defineComponent({
             data.value = response.data
             
             for (let i of data.value) {
-             testdata.value.push(i)
+              if(i.originalPostId == route.params.id){
+                 testdata.value.push(i)
+              }
+              console.log('hi')
+              console.log(i.topicId)
             }
+
             for (let i of data.value) { 
                 if(i.originalPostId == route.params.id){
                   comm.value.push(i)
@@ -207,7 +190,6 @@ export default defineComponent({
     })
 
     return {
-      tree,
         data, 
         loadPosts,
         posts,
@@ -217,6 +199,7 @@ export default defineComponent({
         commTags,
         showComments,
         testdata,
+      
     }
         
     },
@@ -230,4 +213,64 @@ export default defineComponent({
   height: fit-content;
   outline-style: double;
 }
+
+/**
+ * Lineas / Detalles
+ -----------------------*/
+.comments-list:before {
+	content: '';
+	width: 2px;
+	height: 100%;
+	background: #c7cacb;
+	position: absolute;
+	left: 32px;
+	top: 0;
+}
+
+.comments-list:after {
+	content: '';
+	position: absolute;
+	background: #c7cacb;
+	bottom: 0;
+	left: 27px;
+	width: 7px;
+	height: 7px;
+	border: 3px solid #dee1e3;
+	-webkit-border-radius: 50%;
+	-moz-border-radius: 50%;
+	border-radius: 50%;
+}
+
+.reply-list:before, .reply-list:after {display: none;}
+.reply-list li:before {
+	content: '';
+	width: 60px;
+	height: 2px;
+	background: #c7cacb;
+	position: absolute;
+	top: 25px;
+	left: -55px;
+}
+
+
+.comments-list li {
+	margin-bottom: 15px;
+	display: block;
+	position: relative;
+}
+
+.comments-list li:after {
+	content: '';
+	display: block;
+	clear: both;
+	height: 0;
+	width: 0;
+}
+
+.reply-list {
+	padding-left: 88px;
+	clear: both;
+	margin-top: 15px;
+}
+
 </style>

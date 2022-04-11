@@ -143,7 +143,9 @@
     </div>
 
     <div class="col" >
-        
+      <div >
+          <alerts/>
+        </div>
       </div>
   </div>
   </div>  
@@ -155,10 +157,11 @@
 import {defineComponent, ref, onMounted, onUpdated, watchEffect } from 'vue';
 import { api } from 'boot/axios'
 import { useQuasar } from 'quasar'
-import Subscriptions from './Subscriptions.vue';
+import Alerts from './Alerts.vue';
+
 
 export default defineComponent({
-  components: { Subscriptions },
+  components: { Alerts },
   name: 'PostBoard',
 
   props:['tabText'], 
@@ -167,8 +170,9 @@ export default defineComponent({
     return {
       isConnected: false,
       socketMessage: ''
-    }
+  }
   },
+
 
   sockets: {
     connect() {
@@ -423,6 +427,7 @@ export default defineComponent({
   /* toggles subscription status */
     function  toggleSub() {
       console.log("clicked")
+
        let url = `https://swarmnet-prod.herokuapp.com/subscriptions/topic/${props.tabText}`
           
             api.get(url,
@@ -436,22 +441,22 @@ export default defineComponent({
               )
             .then((response) => {
               data.value = response.data
-              console.log(data.value)
               
               /* toogle subscription status */
                 api.put(`https://swarmnet-prod.herokuapp.com/subscriptions/${data.value.id}/status`,
                 {
                 headers: {
-                  'Authorization':'JWT '+ localStorage.getItem('token'),
+                  Authorization:'JWT '+ localStorage.getItem('token'),
                   'Access-Control-Allow-Origin': '*'
                 }
               })
                   .then((response) => { 
-                    if(response.status == 200){ /*user is opposite of previous state */
-                        subbed.value = !subbed.value
-                        console.log("new sub status")
-                        console.log(subbed.value)
-                    }
+                    console.log(response.data)
+                    // if(response.status == 200){ /*user is opposite of previous state */
+                    //     subbed.value = !subbed.value
+                    //     console.log("new sub status")
+                    //     console.log(subbed.value)
+                    // }
                           
                   })
                   .catch(() => {
@@ -713,11 +718,3 @@ export default defineComponent({
   width: 100%
   max-width: 300px
 </style>
-
-
-
-
-
-
-
-

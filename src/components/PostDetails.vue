@@ -49,21 +49,17 @@ import { api } from 'boot/axios'
 import { useQuasar } from 'quasar'
 import { onMounted} from 'vue'
 import { useRoute } from 'vue-router'
-
 export default defineComponent({
     
      name: 'PostDetails',
      props: [ 'label', 'nodes', 'depth', 'id', 'topic' ],
-
      components: {
       Comments
     },
-
      data(){
         return {PostId: this.$route.params.id}
      },
     
-
      setup() {
       const route = useRoute()
       const $q = useQuasar()
@@ -74,7 +70,6 @@ export default defineComponent({
       const postTags = ref([])
       const commTags = ref([])
       const testdata = ref([])
-
       function loadPosts(){
          
          let url = "https://swarmnet-prod.herokuapp.com/posts/" + route.params.id
@@ -101,9 +96,7 @@ export default defineComponent({
               icon: 'report_problem'
             })
           })
-
       }
-
       function loadComments(){
          let url = "https://swarmnet-prod.herokuapp.com/replies"
          
@@ -124,7 +117,6 @@ export default defineComponent({
               console.log('hi')
               console.log(i.topicId)
             }
-
             for (let i of data.value) { 
                 if(i.originalPostId == route.params.id){
                   comm.value.push(i)
@@ -142,12 +134,9 @@ export default defineComponent({
               icon: 'report_problem'
             })
           })
-
       }
-
       function showComments(id){
         this.comments.slice(0);
-
          let url = "https://swarmnet-prod.herokuapp.com/replies"
          
           api.get(url,{
@@ -180,15 +169,11 @@ export default defineComponent({
               icon: 'report_problem'
             })
           })
-
       }
-
-
   onMounted(() => {
       loadPosts();
       loadComments();
     })
-
     return {
         data, 
         loadPosts,
@@ -213,7 +198,6 @@ export default defineComponent({
   height: fit-content;
   outline-style: double;
 }
-
 /**
  * Lineas / Detalles
  -----------------------*/
@@ -226,7 +210,6 @@ export default defineComponent({
 	left: 32px;
 	top: 0;
 }
-
 .comments-list:after {
 	content: '';
 	position: absolute;
@@ -240,7 +223,6 @@ export default defineComponent({
 	-moz-border-radius: 50%;
 	border-radius: 50%;
 }
-
 .reply-list:before, .reply-list:after {display: none;}
 .reply-list li:before {
 	content: '';
@@ -251,14 +233,11 @@ export default defineComponent({
 	top: 25px;
 	left: -55px;
 }
-
-
 .comments-list li {
 	margin-bottom: 15px;
 	display: block;
 	position: relative;
 }
-
 .comments-list li:after {
 	content: '';
 	display: block;
@@ -266,11 +245,9 @@ export default defineComponent({
 	height: 0;
 	width: 0;
 }
-
 .reply-list {
 	padding-left: 88px;
 	clear: both;
 	margin-top: 15px;
 }
-
 </style>

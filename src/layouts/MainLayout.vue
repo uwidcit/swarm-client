@@ -46,7 +46,20 @@
            
       </q-tabs>       
      </div>
-  
+
+    
+        <!--
+        //for alerts:
+        <q-btn round colour="primary" icon="fas fa-map-pin">
+          <q-tooltip>
+          Pin a location on map
+        </q-tooltip>
+        </q-btn>
+      
+      <q-btn icon="fas fa-upload" label="Upload Photo" stack glossy color="primary" /> 
+      -->
+
+
      <q-space/>
 
       <div class="q-gutter-sm row items-center no-wrap ">
@@ -432,6 +445,8 @@ Over 6500 Police Officers in varying ranks and Special Reserved Police support t
 
 import EssentialLink from 'components/EssentialLink.vue'
 import PostBoard from 'components/PostBoard.vue';
+import axios from 'axios';
+
 
 import { defineComponent, ref} from 'vue'
 import { api } from 'boot/axios'
@@ -446,16 +461,21 @@ export default defineComponent({
     EssentialLink,
     PostBoard,
     Inbox,
+    
+    
   },
 
   data () {
     return {
+      error: "",
       messages: [],
+      address: "",
       socket: io.connect('wss://8080-uwidcit-swarmnetbackend-c20l2b6i6kj.ws-us38.gitpod.io/:8080',{
          transports:["websocket"]
       }),
       tagText: '0',
       text: '',
+      //address: '',
       tag: '',
     
       dialogVis: false,
@@ -496,7 +516,6 @@ export default defineComponent({
         y: this.dialogPos.y + evt.delta.y
       }
     },
-
     
   },
 
@@ -510,7 +529,7 @@ export default defineComponent({
     const tab = ref('flooding')
     const subList = ref([])
    
-    
+
     function loadData () {
       console.log(localStorage.getItem('token'))
     api.get('https://swarmnet-prod.herokuapp.com/topics',{
@@ -640,6 +659,8 @@ function test(){
       tab,
       miniState: ref(true),
       leftDrawerOpen,
+
+
       toggleLeftDrawer () {
         leftDrawerOpen.value = !leftDrawerOpen.value
       },
@@ -649,6 +670,7 @@ function test(){
        fire: ref(false),
        ambulance: ref(false),
        odpm: ref(false),
+       openalerts: ref(false),
       maximizedToggle: ref(false),
     }
 

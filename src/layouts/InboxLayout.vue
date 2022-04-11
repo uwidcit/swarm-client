@@ -3,7 +3,7 @@
     <q-layout view="lHh Lpr lff"  class="shadow-2 rounded-borders">
       <q-header elevated class="bg-cyan-10">
         <q-toolbar>
-          <q-toolbar-title>Swarn Net</q-toolbar-title>
+          <q-toolbar-title>SWARMNET</q-toolbar-title>
           <q-btn flat @click="drawer = !drawer" round dense icon="menu" />
         </q-toolbar>
       </q-header>

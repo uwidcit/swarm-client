@@ -88,7 +88,7 @@ export default {
             api.post(url,{
               text: text,  
               longitude: long.value,
-              latitude: long.value,
+              latitude: lat.value,
               composed: "2022-04-09T14:48:00Z"
               },
               {

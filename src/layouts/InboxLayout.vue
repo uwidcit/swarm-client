@@ -16,17 +16,7 @@
       >
         <q-scroll-area style="height: calc(100% - 150px); margin-top: 150px; border-right: 1px solid #ddd">
           <q-list padding>
-            <q-item clickable v-ripple>
-              <q-item-section avatar>
-                <q-icon name="inbox" />
-              </q-item-section>
-
-              <q-item-section>
-                Inbox
-              </q-item-section>
-            </q-item>
-
-            <q-item to='/home' active clickable v-ripple>
+              <q-item to='/home' active clickable v-ripple>
               <q-item-section avatar>
                 <q-icon name="star" />
               </q-item-section>
@@ -38,23 +28,24 @@
 
             <q-item clickable v-ripple>
               <q-item-section avatar>
-                <q-icon name="send" />
+                <q-icon name="mark_email_unread" />
               </q-item-section>
 
               <q-item-section>
-                Send
+                Inbox
               </q-item-section>
             </q-item>
 
             <q-item clickable v-ripple>
               <q-item-section avatar>
-                <q-icon name="drafts" />
+                <q-icon name="mark_email_read" />
               </q-item-section>
 
               <q-item-section>
-                Drafts
+                Read
               </q-item-section>
             </q-item>
+
           </q-list>
         </q-scroll-area>
 

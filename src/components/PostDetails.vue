@@ -20,26 +20,25 @@
               {{tags.text}}
             </q-chip>
 
-            <q-btn flat round color="grey" icon="fas fa-comments" size="sm" 
-                    class="position = absolute"/>
            </div>
 
         </q-item-section>
 
         <q-item-section side top>
-          <q-item-label caption>5 min ago</q-item-label>
+          <q-item-label caption>
+            {{date}}</q-item-label>
         </q-item-section>
         
       </q-item>
     </q-list>
 </div>
 
-<div  v-for="c in testdata" :key="c.id" style="margin-left: 40px">
-  <comments :label="c.text" :nodes="c.replies" :depth="0"  :id="c.id" :topic="c.topicId"></comments>
-</div>
 
+  <div  v-for="c in testdata" :key="c.id" style="margin-left: 40px; box-sizing: border-box; ">
+      <comments :label="c.text" :nodes="c.replies" :depth="0"  :id="c.id" :topic="c.topicId" :date="c.created"></comments>
+    </div>
 
-
+ 
 </template>
 
 <script>
@@ -49,11 +48,12 @@ import { api } from 'boot/axios'
 import { useQuasar } from 'quasar'
 import { onMounted} from 'vue'
 import { useRoute } from 'vue-router'
+import { formatDistance} from 'date-fns'
 
 export default defineComponent({
     
      name: 'PostDetails',
-     props: [ 'label', 'nodes', 'depth', 'id', 'topic' ],
+     props: [ 'label', 'nodes', 'depth', 'id', 'topic', 'date' ],
 
      components: {
       Comments
@@ -74,6 +74,13 @@ export default defineComponent({
       const postTags = ref([])
       const commTags = ref([])
       const testdata = ref([])
+      const date = ref("")
+
+      function datePassed(time) {
+      console.log(Date.parse(time))
+      console.log(formatDistance(Date.parse(time), new Date(), { addSuffix: true }))
+        return formatDistance(Date.parse(time), new Date(), { addSuffix: true })
+    }
 
       function loadPosts(){
          
@@ -89,9 +96,9 @@ export default defineComponent({
           .then((response) => {
             data.value = response.data
             posts.value.push(data.value) 
-            
-          title.value = posts.value[0].text
-          postTags.value = posts.value[0].tags
+            date.value = datePassed(posts.value[0].created)
+            title.value = posts.value[0].text
+            postTags.value = posts.value[0].tags
           })
           .catch(() => {
             $q.notify({
@@ -190,6 +197,8 @@ export default defineComponent({
     })
 
     return {
+        datePassed,
+        date,
         data, 
         loadPosts,
         posts,

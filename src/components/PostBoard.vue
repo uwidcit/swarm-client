@@ -1,7 +1,5 @@
 <template>
   <div class="q-pa-md" >
-    <div class="row">
-    <div class="col-10">
     <div class="q-gutter-md row">
       <q-input
         v-model="search"
@@ -18,20 +16,22 @@
           <q-btn icon="fas fa-times" flat round @click="search='', getDetails(topicInfo)" />
         </template>
       </q-input>
-      
-    </div>
 
-      <q-toggle
+      <q-space/>
+
+      <div class="q-gutter-sm row items-center no-wrap ">
+        <q-toggle
         v-model="subbed"
         checked-icon="check"
         color="red"
         unchecked-icon="clear"
         v-on:click="toggleSub"
       />
-    
-   
+     
     <q-btn fab flat round icon="far fa-edit" color="accent" size="xs" fab-mini @click="fixed = true"/>
-    
+
+      </div>    
+    </div>
 
      <q-dialog v-model="fixed" no-refocus>
       <q-card style="width: 600px; height: 400px; background-color: powderblue;">
@@ -83,7 +83,7 @@
       </q-card>
     </q-dialog>
   
-    
+    <!--- 
     <div class="q-pa-md" id= "clear" >
         <q-list bordered padding separator >
           
@@ -119,12 +119,10 @@
             <q-item-section side top>
               <q-item-label caption> {{post.created}} </q-item-label>
             </q-item-section>
-            
-          
-          </q-item>
-          
+             
+          </q-item> 
         </q-list>
-
+      
         <q-dialog v-model="prompt" persistent>
           <q-card style="min-width: 350px">
             <q-input  placeholder="Add comment..." v-model="text" counter maxlength="260" autogrow :dense="dense">
@@ -140,13 +138,16 @@
         
 
     </div>
+    --->
     </div>
-
-    <div class="col" >
-        
+          
+ <q-page class="q-pa-sm">
+    <div class="row q-col-gutter-sm ">
+      <div class="col-md-4 col-lg-4 col-sm-12 col-xs-12" v-for="(post, index) in pos" >
+        <card-product :data="post"></card-product>
       </div>
-  </div>
-  </div>  
+    </div>
+  </q-page>
 
 </template>
 
@@ -155,10 +156,12 @@
 import {defineComponent, ref, onMounted, onUpdated, watchEffect } from 'vue';
 import { api } from 'boot/axios'
 import { useQuasar } from 'quasar'
-import Subscriptions from './Subscriptions.vue';
+import CardProduct from './cards/CardProduct.vue';
+
+
 
 export default defineComponent({
-  components: { Subscriptions },
+  components: { CardProduct },
   name: 'PostBoard',
 
   props:['tabText'], 
@@ -167,8 +170,9 @@ export default defineComponent({
     return {
       isConnected: false,
       socketMessage: ''
-    }
+  }
   },
+
 
   sockets: {
     connect() {
@@ -194,10 +198,8 @@ export default defineComponent({
     const ptabtext = ref('')
     const ptopid = ref('')
     const search = ref('')
-    const subID = ref('')
+    const options = ref([])
     const topicInfo = ref('')
-
-    
 
     /* gets topics to use for q-dialog */
     function loadData () {
@@ -253,7 +255,7 @@ export default defineComponent({
                
             
                 pos.value.unshift(i)
-                 posTags.value.unshift(i.tags)
+                posTags.value.unshift(i.tags)
               for (let j of comments.value){
               if(i.id == j.id){
                 pos.value.shift()
@@ -422,7 +424,6 @@ export default defineComponent({
     
   /* toggles subscription status */
     function  toggleSub() {
-      console.log("clicked")
        let url = `https://swarmnet-prod.herokuapp.com/subscriptions/topic/${props.tabText}`
           
             api.get(url,
@@ -437,21 +438,22 @@ export default defineComponent({
             .then((response) => {
               data.value = response.data
               console.log(data.value)
-              
               /* toogle subscription status */
                 api.put(`https://swarmnet-prod.herokuapp.com/subscriptions/${data.value.id}/status`,
                 {
                 headers: {
-                  'Authorization':'JWT '+ localStorage.getItem('token'),
-                  'Access-Control-Allow-Origin': '*'
+                  Authorization:'JWT '+ "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2NTAzNDI0OTUsImlhdCI6MTY0OTczNzY5NSwibmJmIjoxNjQ5NzM3Njk1LCJpZGVudGl0eSI6MX0.rwzBjsYx4vEf5Q2lJ7dEW1RV1i2gNVZ8JdSEggdHxCk",
+                  'Access-Control-Allow-Origin': '*',
+                  'Content-Type': 'application/json'
                 }
               })
                   .then((response) => { 
-                    if(response.status == 200){ /*user is opposite of previous state */
-                        subbed.value = !subbed.value
-                        console.log("new sub status")
-                        console.log(subbed.value)
-                    }
+                    console.log(response.data)
+                    // if(response.status == 200){ /*user is opposite of previous state */
+                    //     subbed.value = !subbed.value
+                    //     console.log("new sub status")
+                    //     console.log(subbed.value)
+                    // }
                           
                   })
                   .catch(() => {
@@ -555,7 +557,33 @@ export default defineComponent({
                 icon: 'report_problem'
               })
             }) 
-    }     
+    }  
+  
+  /* gets all post tags */
+  function getPostTags(){
+    api.get("https://swarmnet-prod.herokuapp.com/tags",{
+        headers: {
+          Authorization:'JWT '+ localStorage.getItem('token'),
+          'Access-Control-Allow-Origin': '*' 
+        }}
+      )
+            .then((response) => {
+              data.value = response.data
+              for (let i of data.value) { 
+                options.value.unshift(i.text)
+              }
+              console.log(options)
+            })
+            .catch(() => {
+              $q.notify({
+                color: 'negative',
+                position: 'top',
+                message: 'Loading failed',
+                icon: 'report_problem'
+              })
+            }) 
+
+  }
   
   watchEffect(()=>{
     console.log(props.tabText)
@@ -577,15 +605,13 @@ export default defineComponent({
               data.value = response.data
 
               for (let i of data.value) { 
-               
-            
                 pos.value.unshift(i)
-                 posTags.value.unshift(i.tags)
-              for (let j of comments.value){
-              if(i.id == j.id){
-                pos.value.shift()
-                 posTags.value.shift()
-              }
+                posTags.value.unshift(i.tags)
+                  for (let j of comments.value){
+                    if(i.id == j.id){
+                      pos.value.shift()
+                      posTags.value.shift()
+                    }
             }
             }
             
@@ -656,6 +682,7 @@ export default defineComponent({
   onMounted(() => {
       loadData();
       displayAllPost();
+      getPostTags();
     })
   
   onUpdated(()=> {
@@ -678,6 +705,8 @@ export default defineComponent({
         ptabtext,
         postPost,
         ptopid,
+        getPostTags,
+        options,
        
         model,
         subbed,

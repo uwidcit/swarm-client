@@ -1,6 +1,6 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <q-header class="bg-cyan-8 text-white" elevated >
+    <q-header class="background text-white" elevated >
       <q-toolbar class="glossy" >
         <div v-if="$q.platform.is.mobile">
            <q-btn
@@ -23,7 +23,7 @@
               dense
             >
             <q-tab  label="ALL TOPICS" @click="tagText='0'" />
-            <q-tab v-for="topic in tops" :key="topic.id" :label="topic.text" @click="tagText=topic.id" />
+            <q-tab v-for="topic in tops" :key="topic.id" :label="topic.text" @click="tagText=topic.id, join_room()" />
                   </q-tabs>
 
         </div> 
@@ -50,7 +50,7 @@
      <q-space/>
 
       <div class="q-gutter-sm row items-center no-wrap ">
-         
+         <alerts> </alerts>
           <q-btn round dense flat color="white" icon="notifications"  >
             <q-badge color="red" text-color="white" floating>
               5
@@ -80,13 +80,14 @@
       v-model="leftDrawerOpen"
       show-if-above
       bordered
-      class="bg-cyan-8 text-white"
+      
       mini-to-overlay
       :mini="miniState"
       @mouseover="miniState = false"
       @mouseout="miniState = true"
     >
-      <q-list>
+      <q-list class="background text-white">
+        
          <q-item to="/home" active-class="q-item-no-link-highlighting" >
           <q-item-section avatar>
           <span v-if="$q.platform.is.desktop" ><q-btn
@@ -438,6 +439,7 @@ import { api } from 'boot/axios'
 import { useQuasar } from 'quasar'
 import { onMounted} from 'vue'
 import Inbox from 'src/pages/Inbox.vue';
+import Alerts from 'src/components/Alerts.vue';
 const io = require('socket.io-client')
 
 export default defineComponent({
@@ -446,14 +448,15 @@ export default defineComponent({
     EssentialLink,
     PostBoard,
     Inbox,
+    Alerts,
   },
 
   data () {
     return {
       messages: [],
-      socket: io.connect('wss://8080-uwidcit-swarmnetbackend-c20l2b6i6kj.ws-us38.gitpod.io/:8080',{
-         transports:["websocket"]
-      }),
+      // socket: io.connect('wss://8080-uwidcit-swarmnetbackend-c20l2b6i6kj.ws-us38.gitpod.io/:8080',{
+      //    transports:["websocket"]
+      // }),
       tagText: '0',
       text: '',
       tag: '',
@@ -469,14 +472,45 @@ export default defineComponent({
  
   mounted() {
     console.log(`the component is now mounted.`)
+    var messages = ''
 
-      this.socket.on('connect', (socket)=>{
-        this.messages = socket;
-        console.log(this.messages)
+    const socket = io("https://8080-uwidcit-swarmnetbackend-c20l2b6i6kj.ws-us39a.gitpod.io/");
+    socket.on("connect", (arg) => {
+      console.log(socket.connected); // true
+      messages = socket.data
+      console.log(messages)
+    });
+
+    socket.on('client_connect', function(text) {
+      console.log("hi")
+      console.log(text)
+      messages = text.text
+      console.log(messages)
+    
+    });
+
+ 
+    socket.on('join', (args) => {
+        console.log(args);
+      });
       
-        //this.socket.send("user connected")
+       
+
+    socket.on('join', ()=>{
+      messages = socket
+      console.log(messages)
+
+        //alert('System: Socket Connection up!')
+      }) 
+
+   
+      // this.socket.on('connect', (socket)=>{
+      //   this.messages = socket;
+      //   console.log(this.messages)
+      
+      //   //this.socket.send("user connected")
         
-      })
+      // })
     console.log(`finished`)  
   },
    
@@ -496,6 +530,14 @@ export default defineComponent({
         y: this.dialogPos.y + evt.delta.y
       }
     },
+
+    join_room(){
+      console.log("called")
+          let to = target.value;
+          let from = document.querySelector('#username').value;
+          socket.emit('join', { from, to });
+          getHistory(from, to);
+      }
 
     
   },
@@ -656,4 +698,12 @@ function test(){
   }
 })
 </script>
+
+<style scoped>
+.background{
+  background-color: #abe9cd;
+background-image: linear-gradient(315deg, #abe9cd 0%, #3eadcf 74%);
+
+}
+</style>
 

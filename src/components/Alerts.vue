@@ -65,8 +65,8 @@ export default {
          navigator.geolocation.getCurrentPosition(
            position=>{
            address.value= "Your coordinates are: " + position.coords.latitude + " , "+position.coords.longitude
-           long.value = position.coords.latitude
-           lat.value = position.coords.longitude
+           lat.value = position.coords.latitude
+           long.value = position.coords.longitude
          },
            error=>{
              console.log(error.message)
@@ -89,7 +89,7 @@ export default {
             api.post(url,{
               text: text,  
               longitude: long.value,
-              latitude: long.value,
+              latitude: lat.value,
               composed: "2022-04-09T14:48:00Z"
               },
               {

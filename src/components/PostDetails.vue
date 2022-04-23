@@ -1,7 +1,7 @@
 <template>
 
 <div class="q-pa-md" >
-    <q-list bordered padding>
+    <q-list bordered padding >
 
       <q-item >
         <q-item-section top avatar>
@@ -12,52 +12,78 @@
 
         <q-item-section>
           <q-item-label> <strong> {{title}} </strong></q-item-label>
-          <br/>
 
-           <div class=" q-gutter-md">
+          <div class="row no-wrap items-center bg-grey-3 rounded-borders">
             <q-chip square color="purple-2" text-color="white" icon="sell" size="md"
-                    v-for="tags in postTags" 
-                    :key="tags.id">
-              {{tags.text}}
-            </q-chip>
-           </div>
-
-          <div class="row justify-between q-mt-sm">
-                <q-btn flat round color="grey" icon="fas fa-comments" size="sm" />
-                <q-btn flat round icon="far fa-eye" size="sm"/>
-                <q-btn flat round icon="far fa-heart" size="sm" />
-                
-          </div> 
+                          v-for="tags in postTags" 
+                          :key="tags.id">
+                    {{tags.text}}
+                  </q-chip>
+            <q-space />
+            <div>
+              <q-btn round dense flat icon="textsms" @click="fixed=true" />    
+            </div>
+          </div>
+           
         </q-item-section>
 
         <q-item-section side top>
-          <q-item-label caption>5 min ago</q-item-label>
+          <q-item-label caption>
+            {{date}}</q-item-label>
         </q-item-section>
         
       </q-item>
     </q-list>
 </div>
 
-<div id="rcorners"><h5 class="text-italic">Comments</h5></div>
+  <div v-if="testdata.length == 0" class="text-weight-medium text-center text-italic">
+      This post contains no replies. Be the first to reply?
+      <q-btn round dense flat icon="textsms" @click="fixed=true" />
+   </div>
+   
+  <div  v-for="c in testdata" :key="c.id" style="margin-left: 40px; box-sizing: border-box; ">
+      <comments :label="c.text" :nodes="c.replies" :depth="0"  :id="c.id" :topic="c.topicId" :date="c.created"></comments>
+    </div>
 
-<div v-for="c in testdata" :key="c.id" style="margin-left: 40px">
-  <comments  :label="c.text" :nodes="c.tags" :depth="0" ></comments>
-</div>
+    <q-dialog v-model="fixed" no-refocus>
+      <q-card style="width: 600px; height: 250px; background-color: powderblue;">
+
+        <q-card-section>
+          <div class="text-h6"> Create a reply </div>
+        </q-card-section>
+        <q-separator />
+
+        <q-card-section style="height: 120px" class="scroll" counter maxlength="260">
+          <q-input placeholder="Enter Comment Here!" type="textarea" v-model="text" counter maxlength="260"  autogrow>
+          </q-input>
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-actions align="right">
+          <q-btn flat label="Discard" color="primary" @click="text = ''" v-close-popup />
+          <q-btn flat label="Post" color="primary" v-close-popup @click="createNewComment(text); text = '';"/>
+        </q-card-actions>
+
+      </q-card>
+    </q-dialog>
+  
 
 </template>
 
 <script>
 import Comments from 'components/Comments.vue'
-import { ref, defineComponent, watch } from 'vue'
+import { ref, defineComponent, provide } from 'vue'
 import { api } from 'boot/axios'
 import { useQuasar } from 'quasar'
 import { onMounted} from 'vue'
 import { useRoute } from 'vue-router'
+import { formatDistance} from 'date-fns'
 
 export default defineComponent({
     
      name: 'PostDetails',
-     props: [ 'label', 'nodes', 'depth' ],
+     props: [ 'label', 'nodes', 'depth', 'id', 'topic', 'date' ],
 
      components: {
       Comments
@@ -68,7 +94,7 @@ export default defineComponent({
      },
     
 
-     setup() {
+     setup(props) {
       const route = useRoute()
       const $q = useQuasar()
       const data = ref(null)
@@ -78,32 +104,19 @@ export default defineComponent({
       const postTags = ref([])
       const commTags = ref([])
       const testdata = ref([])
-      const tree = ref({label: 'root',
-                        nodes: [
-                          {
-                            label: 'item1',
-                            nodes: [
-                              {
-                                label: 'item1.1'
-                              },
-                              {
-                                label: 'item1.2',
-                                nodes: [
-                                  {
-                                    label: 'item1.2.1'
-                                  }
-                                ]
-                              }
-                            ]
-                          }, 
-                          {
-                            label: 'item2'  
-                          }
-                        ]})
+      const date = ref("")
+      const text = ref('')
+      const tId = ref(0) /* topic id number */
+
+      function datePassed(time) {
+      console.log(Date.parse(time))
+      console.log(formatDistance(Date.parse(time), new Date(), { addSuffix: true }))
+        return formatDistance(Date.parse(time), new Date(), { addSuffix: true })
+    }
 
       function loadPosts(){
          
-         let url = "https://swarmnet-staging.herokuapp.com/posts/" + route.params.id
+         let url = "https://swarmnet-prod.herokuapp.com/posts/" + route.params.id
          
           api.get(url,{
           method: 'GET',
@@ -114,10 +127,11 @@ export default defineComponent({
             })
           .then((response) => {
             data.value = response.data
+            tId.value = data.value.topicId
             posts.value.push(data.value) 
-            
-          title.value = posts.value[0].text
-          postTags.value = posts.value[0].tags
+            date.value = datePassed(posts.value[0].created)
+            title.value = posts.value[0].text
+            postTags.value = posts.value[0].tags
           })
           .catch(() => {
             $q.notify({
@@ -131,8 +145,7 @@ export default defineComponent({
       }
 
       function loadComments(){
-         
-         let url = "https://swarmnet-staging.herokuapp.com/replies"
+         let url = "https://swarmnet-prod.herokuapp.com/replies"
          
           api.get(url,{
           method: 'GET',
@@ -145,8 +158,14 @@ export default defineComponent({
             data.value = response.data
             
             for (let i of data.value) {
-             testdata.value.push(i)
+              
+              if(i.originalPostId == route.params.id){
+                 testdata.value.push(i)
+              }
+              console.log('hi')
+              console.log(i.topicId)
             }
+
             for (let i of data.value) { 
                 if(i.originalPostId == route.params.id){
                   comm.value.push(i)
@@ -167,43 +186,47 @@ export default defineComponent({
 
       }
 
-      function showComments(id){
-        this.comments.slice(0);
 
-         let url = "https://swarmnet-staging.herokuapp.com/replies"
-         
-          api.get(url,{
-          method: 'GET',
-          
+      function createNewComment(message){
+        console.log("creating new comment")
+        console.log(message, tId.value, route.params.id)
+
+      api.post("https://swarmnet-prod.herokuapp.com/replies", {
+          "topic_id": tId.value,
+          "text": message,
+          "replyTo": route.params.id,
+          "tags": [],
+          "composed": "2011-10-10T14:48:00Z"
+        },{
           headers: {
-                  'Access-Control-Allow-Origin': '*'
-                }
+            Authorization:'JWT '+ localStorage.getItem('token'),
+            'Access-Control-Allow-Origin': '*'   
+          }
+          }).then((response) => {
+            if(response.status == 201){
+
+              // notify user 
+              $q.notify({
+              type: 'positive',
+              message: 'COMMENT POSTED'
             })
-          .then((response) => {
-            data.value = response.data
-            
-            
-            for (let i of data.value) { 
-                if(i.originalPostId == id){
-                  comm.value.push(i)
-                  commTags.value.push(i.tags)
-                }
-            } 
-          
-           console.log( "Tags ")
-          console.log(commTags.value)
-          
-          })
+              loadComments()
+
+            }
+    })
           .catch(() => {
             $q.notify({
               color: 'negative',
               position: 'top',
-              message: 'Loading failed',
+              message: 'Reply could not be posted',
               icon: 'report_problem'
             })
           })
-
+       
+      
+           
       }
+
 
 
   onMounted(() => {
@@ -212,7 +235,8 @@ export default defineComponent({
     })
 
     return {
-      tree,
+        datePassed,
+        date,
         data, 
         loadPosts,
         posts,
@@ -220,8 +244,13 @@ export default defineComponent({
         comm,
         postTags,
         commTags,
-        showComments,
+       
         testdata,
+        text,
+        createNewComment,
+        tId,
+        fixed: ref(false)
+      
     }
         
     },
@@ -235,4 +264,64 @@ export default defineComponent({
   height: fit-content;
   outline-style: double;
 }
+
+/**
+ * Lineas / Detalles
+ -----------------------*/
+.comments-list:before {
+	content: '';
+	width: 2px;
+	height: 100%;
+	background: #c7cacb;
+	position: absolute;
+	left: 32px;
+	top: 0;
+}
+
+.comments-list:after {
+	content: '';
+	position: absolute;
+	background: #c7cacb;
+	bottom: 0;
+	left: 27px;
+	width: 7px;
+	height: 7px;
+	border: 3px solid #dee1e3;
+	-webkit-border-radius: 50%;
+	-moz-border-radius: 50%;
+	border-radius: 50%;
+}
+
+.reply-list:before, .reply-list:after {display: none;}
+.reply-list li:before {
+	content: '';
+	width: 60px;
+	height: 2px;
+	background: #c7cacb;
+	position: absolute;
+	top: 25px;
+	left: -55px;
+}
+
+
+.comments-list li {
+	margin-bottom: 15px;
+	display: block;
+	position: relative;
+}
+
+.comments-list li:after {
+	content: '';
+	display: block;
+	clear: both;
+	height: 0;
+	width: 0;
+}
+
+.reply-list {
+	padding-left: 88px;
+	clear: both;
+	margin-top: 15px;
+}
+
 </style>

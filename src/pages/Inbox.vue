@@ -41,7 +41,8 @@
         </q-item-section>
 
         <q-item-section side top>
-          <q-item-label caption> {{post.created}} </q-item-label>
+          <q-item-label caption> 
+            {{datePassed(post.created)}} </q-item-label>
         </q-item-section>
         
       
@@ -57,10 +58,11 @@
 
 <script>
 
-import {defineComponent, defineAsyncComponent, ref} from 'vue';
+import {ref} from 'vue';
 import { api } from 'boot/axios'
 import { useQuasar } from 'quasar'
 import { onMounted, onUpdated} from 'vue'
+import { formatDistance} from 'date-fns'
 
 export default {
     name: 'Inbox',
@@ -81,27 +83,31 @@ export default {
     const pos = ref([])
     const posTags = ref([])
 
+    function datePassed(time) {
+      console.log(Date.parse(time))
+      console.log(formatDistance(Date.parse(time), new Date(), { addSuffix: true }))
+        return formatDistance(Date.parse(time), new Date(), { addSuffix: true })
+    }
 
     function loadData () {
-    api.get('https://swarmnet-staging.herokuapp.com/posts',{
+    api.get('https://swarmnet-prod.herokuapp.com/inbox',{
   method: 'GET',
   
   headers: {
-          'Access-Control-Allow-Origin': '*'
+          Authorization:'JWT '+ localStorage.getItem('token'),
+          'Access-Control-Allow-Origin': '*',
+
         }
     })
       .then((response) => {
         data.value = response.data
         
-        for (let i of data.value) { 
-             pos.value.push(i)
-             posTags.value.push(i.tags)
+        for (let i of data.value) {  /* unshift() function adds items to the start of an array. */
+             pos.value.unshift(i.post)  
+             posTags.value.unshift(i.post.tags)
              
             }
-            console.log(pos.value)
-      
-      /* console.log( tops.value[0].text) */
-       console.log(tops) 
+          
       })
       .catch(() => {
         $q.notify({
@@ -110,7 +116,7 @@ export default {
           message: 'Loading failed',
           icon: 'report_problem'
         })
-      })
+      }) 
   }
  
    function deletePost(id){
@@ -126,7 +132,7 @@ export default {
        loc += 1
       }
 
-      console.log(pos.value) 
+      console.log(pos.value)  
 
    }
     
@@ -143,7 +149,8 @@ export default {
     
 
     return {
-      data, 
+      data,
+      datePassed, 
       loadData,
       deletePost,
       tops,

@@ -1,6 +1,6 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <q-header elevated >
+    <q-header class="background text-white" elevated >
       <q-toolbar class="glossy" >
         <div v-if="$q.platform.is.mobile">
            <q-btn
@@ -22,14 +22,16 @@
               class="text-white shadow-2"
               dense
             >
-        <q-tab v-for="topic in tops" :key="topic.id" :label="topic.text" @click="tagText=topic.id" />
-              </q-tabs>
+            <q-tab  label="ALL TOPICS" @click="tagText='0'" />
+            <q-tab v-for="topic in tops" :key="topic.id" :label="topic.text" @click="tagText=topic.id" />
+                  </q-tabs>
+                  
 
         </div> 
         </div>
        
-      <q-space/>
-     <div v-if="$q.platform.is.desktop" style="max-width: 800px">
+      <!--- fir desktop view only--->
+     <div v-if="$q.platform.is.desktop" style="max-width: 1000px">
         <q-tabs
         v-model="tab"
         inline-label
@@ -38,16 +40,18 @@
         class="text-white shadow-2"
         dense
       >
+        
+        <q-tab  label="ALL TOPICS" @click="tagText='0'" />
         <q-tab v-for="topic in tops" :key="topic.id" :label="topic.text" @click="tagText=topic.id" />
-          
-      </q-tabs>
-       
+         
+           
+      </q-tabs>       
      </div>
-     
+  
      <q-space/>
 
       <div class="q-gutter-sm row items-center no-wrap ">
-         
+         <alerts> </alerts>
           <q-btn round dense flat color="white" icon="notifications"  >
             <q-badge color="red" text-color="white" floating>
               5
@@ -77,10 +81,15 @@
       v-model="leftDrawerOpen"
       show-if-above
       bordered
-      class="bg-primary text-white"
+      class="bg-cyan"
+      mini-to-overlay
+      :mini="miniState"
+      @mouseover="miniState = false"
+      @mouseout="miniState = true"
     >
-      <q-list>
-         <q-item to="/" active-class="q-item-no-link-highlighting" >
+      <q-list class="background text-white">
+        
+         <q-item to="/home" active-class="q-item-no-link-highlighting" >
           <q-item-section avatar>
           <span v-if="$q.platform.is.desktop" ><q-btn
           flat
@@ -107,7 +116,7 @@
 
         <q-separator color="orange" inset />
 
-        <q-item to="/"  active-class="q-item-no-link-highlighting">
+        <q-item to="/home"  active-class="q-item-no-link-highlighting" @click="ok = true">
           <q-item-section avatar>
             <q-icon name="fas fa-home"/>
           </q-item-section>
@@ -160,15 +169,6 @@
         </q-list>
         </q-expansion-item>
 
-        <q-item to="/" active-class="q-item-no-link-highlighting">
-          <q-item-section avatar>
-            <q-icon name="fas fa-check-square"/>
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Subscriptions</q-item-label>
-          </q-item-section>
-        </q-item>
-
         <q-item to="/InboxLayout" active-class="q-item-no-link-highlighting">
           <q-item-section avatar>
             <q-icon name="fas fa-envelope-open"/>
@@ -179,7 +179,7 @@
           </q-item-section>
         </q-item>
 
-      <q-item to="/" active-class="q-item-no-link-highlighting">
+      <q-item to="/home" active-class="q-item-no-link-highlighting">
           <q-item-section avatar>
             <q-icon name="notifications_active"/>
           </q-item-section>
@@ -422,46 +422,45 @@ Over 6500 Police Officers in varying ranks and Special Reserved Police support t
       </q-card>
     </q-dialog>
 
-    <q-page-container  class="bg-grey-2"> 
-
+    <q-page-container class="bg-grey-2"> 
        <post-board :tabText="tagText"/>
-  
     </q-page-container>
-     
-    
 
     
   </q-layout>
 </template>
 
 <script>
-import EssentialLink from 'components/EssentialLink.vue'
-import PostBoard from 'components/PostBoard.vue';
-import Inbox from 'components/Inbox.vue';
 
-import { defineComponent, ref } from 'vue'
+
+import PostBoard from 'components/PostBoard.vue';
+
+import { defineComponent, ref} from 'vue'
 import { api } from 'boot/axios'
 import { useQuasar } from 'quasar'
 import { onMounted} from 'vue'
-
+import Inbox from 'src/pages/Inbox.vue';
+import Alerts from 'src/components/Alerts.vue';
+// const io = require('socket.io-client')
 
 export default defineComponent({
   name: 'MainLayout',
-
-
   components: {
-    EssentialLink,
     PostBoard,
-    Inbox
+    Inbox,
+    Alerts,
   },
 
   data () {
-    a: true;
-
     return {
-      tagText: 'Hi from data',
+      messages: [],
+      // socket: io.connect('wss://8080-uwidcit-swarmnetbackend-c20l2b6i6kj.ws-us38.gitpod.io/:8080',{
+      //    transports:["websocket"]
+      // }),
+      tagText: '0',
       text: '',
       tag: '',
+    
       dialogVis: false,
       dialogPos: {
         x: 0,
@@ -470,7 +469,49 @@ export default defineComponent({
     }
   },
 
+ 
+  // mounted() {
+  //   console.log(`the component is now mounted.`)
+  //   var messages = ''
 
+  //   const socket = io("https://8080-uwidcit-swarmnetbackend-c20l2b6i6kj.ws-us39a.gitpod.io/");
+  //   socket.on("connect", (arg) => {
+    
+  //   });
+
+  //   socket.on('client_connect', function(text) {
+  //     console.log("hi")
+  //     console.log(text)
+  //     messages = text.text
+  //     console.log(messages)
+    
+  //   });
+
+ 
+  //   socket.on('join', (args) => {
+  //       console.log(args);
+  //     });
+      
+       
+
+  //   socket.on('join_room', ()=>{
+  //     messages = socket
+  //     console.log(messages)
+
+  //       //alert('System: Socket Connection up!')
+  //     }) 
+
+   
+  //     // this.socket.on('connect', (socket)=>{
+  //     //   this.messages = socket;
+  //     //   console.log(this.messages)
+      
+  //     //   //this.socket.send("user connected")
+        
+  //     // })
+  //   console.log(`finished`)  
+  // },
+   
 
   computed: {
     dialogStyle() {
@@ -488,7 +529,6 @@ export default defineComponent({
       }
     },
 
-    
   },
 
   setup () {
@@ -499,10 +539,19 @@ export default defineComponent({
     const data = ref(null)
     const tops = ref([])
     const tab = ref('flooding')
+    const subList = ref([])
    
-
+    function join_room(name){
+      console.log("this socket function is clicked")
+   
+      const socket = io("https://8080-uwidcit-swarmnetbackend-c20l2b6i6kj.ws-us39a.gitpod.io/");
+      let room = name;
+      socket.emit('join_room', room);        
+}
+    
     function loadData () {
-    api.get('https://swarmnet-staging.herokuapp.com/topics',{
+      console.log(localStorage.getItem('token'))
+    api.get('https://swarmnet-prod.herokuapp.com/topics',{
   method: 'GET',
   
   headers: {
@@ -513,12 +562,13 @@ export default defineComponent({
         data.value = response.data
         
         for (let i of data.value) { 
-          tops.value.push(i)
-         
+          tops.value.push(i)  
         }
       
-      /* console.log( tops.value[0].text) */
+      console.log( tops.value[0].text) 
        console.log(tops) 
+
+       test()
       })
       .catch(() => {
         $q.notify({
@@ -530,17 +580,110 @@ export default defineComponent({
       })
   }
 
+    /* displays subscription when topic is clicked once*/
+    function createSubs(id){
+      /* create subscription */ 
+      console.log("creating sub")  
+      console.log("Sub: "+ id)
+      let suburl = "https://swarmnet-prod.herokuapp.com/subscriptions"
+
+        api.post(suburl,{
+          topic_id: id,  
+          },
+          {
+            headers: {
+              Authorization:'JWT '+ localStorage.getItem('token'),
+              'Access-Control-Allow-Origin': '*'                       
+            }
+          }
+          )
+        .then((response) => {
+          if(response.data == "created"){
+            console.log("Subscription created")
+          }
+        })
+        .catch(() => {
+          $q.notify({
+            color: 'negative',
+            position: 'top',
+            message: 'Loading failed',
+            icon: 'report_problem'
+          })
+        }) 
+                   
+}
+
+function test(){
+  subList.value.splice(0)
+  let found = false
+  let suburl = "https://swarmnet-prod.herokuapp.com/subscriptions"
+
+        api.get(suburl,
+          {
+            headers: {
+              Authorization:'JWT '+ localStorage.getItem('token'),
+              'Access-Control-Allow-Origin': '*'                       
+            }
+          }
+          )
+        .then((response) => {
+          data.value = response.data
+
+          for (let i of data.value) {
+            subList.value.push(i) 
+          }
+          console.log(subList.value)
+         
+          for(let j of tops.value){ /* loop through list of topics */
+          console.log("eneter loop")
+          
+           
+            for(let k of subList.value){ /* inner loop for list of subscribed topics */
+              // console.log(k.userId)
+              // console.log(j.id)
+              if(j.id == k.topicId && k.userId==localStorage.getItem('userId')){ /*if a topic already has a subscription, then set found to true */
+                // console.log(j.text)
+                 found = true
+              }
+            }
+           
+            if(found == false){ /* if found is false, then create a subscription*/
+             console.log(found)
+              createSubs(j.id)
+            }
+            else{ /* if found is true, reset it to false*/
+              found = false 
+            }  
+          }
+        })
+        .catch(() => {
+          $q.notify({
+            color: 'negative',
+            position: 'top',
+            message: 'Loading failed',
+            icon: 'report_problem'
+          })
+        }) 
+  
+ 
+  
+}
+
   onMounted(() => {
       loadData();
+      console.log("hi from main mount")
     })
     
 
     return {
+      join_room,
+      test,
+      createSubs,
       data, 
       loadData,
       tops,
       tab,
-    
+      miniState: ref(true),
       leftDrawerOpen,
       toggleLeftDrawer () {
         leftDrawerOpen.value = !leftDrawerOpen.value
@@ -558,4 +701,12 @@ export default defineComponent({
   }
 })
 </script>
+
+<style scoped>
+.background{
+  background-color: #abe9cd;
+background-image: linear-gradient(315deg, #abe9cd 0%, #3eadcf 74%);
+
+}
+</style>
 

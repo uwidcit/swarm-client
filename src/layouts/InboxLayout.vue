@@ -1,39 +1,83 @@
 <template>
-  <q-layout view="hHh lpR fFf">
+  <div class="q-pa-md">
+    <q-layout view="lHh Lpr lff"  class="shadow-2 rounded-borders">
+      <q-header elevated class="bg-cyan-10">
+        <q-toolbar>
+          <q-toolbar-title>Swarn Net</q-toolbar-title>
+          <q-btn flat @click="drawer = !drawer" round dense icon="menu" />
+        </q-toolbar>
+      </q-header>
 
-    <q-header bordered class="bg-primary text-white" height-hint="98">
-      <q-toolbar>
-        <q-toolbar-title>
-          SWARMNET
-        </q-toolbar-title>
-      </q-toolbar>
+      <q-drawer
+        v-model="drawer"
+        show-if-above
+        :width="200"
+        :breakpoint="400"
+      >
+        <q-scroll-area style="height: calc(100% - 150px); margin-top: 150px; border-right: 1px solid #ddd">
+          <q-list padding>
+              <q-item to='/home' active clickable v-ripple>
+              <q-item-section avatar>
+                <q-icon name="star" />
+              </q-item-section>
 
-      <q-tabs align="left">
-        <q-route-tab to="/" label="Menu" />
-        <q-route-tab  label="Read" />
-        <q-route-tab  label="Unread" />
-      </q-tabs>
-    </q-header>
+              <q-item-section>
+               Home
+              </q-item-section>
+            </q-item>
 
-    <q-page-container>
-      <inbox/>
-    </q-page-container>
+            <q-item clickable v-ripple>
+              <q-item-section avatar>
+                <q-icon name="mark_email_unread" />
+              </q-item-section>
 
-  </q-layout>
+              <q-item-section>
+                Inbox
+              </q-item-section>
+            </q-item>
+
+            <q-item clickable v-ripple>
+              <q-item-section avatar>
+                <q-icon name="mark_email_read" />
+              </q-item-section>
+
+              <q-item-section>
+                Read
+              </q-item-section>
+            </q-item>
+
+          </q-list>
+        </q-scroll-area>
+
+        <q-img class="absolute-top" src="https://cdn.quasar.dev/img/material.png" style="height: 150px">
+          <div class="absolute-bottom bg-transparent">
+            <q-avatar size="56px" class="q-mb-sm">
+              <img src="https://cdn.quasar.dev/img/boy-avatar.png">
+            </q-avatar>
+            <div class="text-weight-bold">Cels Lewis</div>
+            <div>@cels_lewie</div>
+          </div>
+        </q-img>
+      </q-drawer>
+
+      <q-page-container>
+        <inbox/>
+      </q-page-container>
+    </q-layout>
+  </div>
 </template>
 
-<script >
+<script>
 import Inbox from 'src/pages/Inbox.vue'
-import { defineComponent } from 'vue'
+import { ref } from 'vue'
+export default {
+  components: { Inbox },
 
-export default defineComponent({
-    components: {
-    Inbox
+   setup () {
+    return {
+      drawer: ref(false)
+    }
+  }
   
-},
-
-    setup() {
-        
-    },
-})
+}
 </script>

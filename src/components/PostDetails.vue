@@ -116,7 +116,7 @@ export default defineComponent({
 
       function loadPosts(){
          
-         let url = "https://swarmnet-prod.herokuapp.com/posts/" + route.params.id
+         let url = "https://swarmnet-staging.herokuapp.com/posts/" + route.params.id
          
           api.get(url,{
           method: 'GET',
@@ -145,7 +145,7 @@ export default defineComponent({
       }
 
       function loadComments(){
-         let url = "https://swarmnet-prod.herokuapp.com/replies"
+         let url = "https://swarmnet-staging.herokuapp.com/replies"
          
           api.get(url,{
           method: 'GET',
@@ -191,7 +191,7 @@ export default defineComponent({
         console.log("creating new comment")
         console.log(message, tId.value, route.params.id)
 
-      api.post("https://swarmnet-prod.herokuapp.com/replies", {
+      api.post("https://swarmnet-staging.herokuapp.com/replies", {
           "topic_id": tId.value,
           "text": message,
           "replyTo": route.params.id,

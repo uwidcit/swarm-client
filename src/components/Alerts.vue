@@ -81,7 +81,7 @@ export default {
 
     function createAlert(text){
         console.log(text, long.value, lat.value)
-        let url = "https://swarmnet-prod.herokuapp.com/alerts"
+        let url = "https://swarmnet-staging.herokuapp.com/alerts"
           
             api.post(url,{
               text: text,  

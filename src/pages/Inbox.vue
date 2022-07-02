@@ -57,12 +57,13 @@
 </template>
 
 <script>
-
+import { io } from "socket.io-client";
 import {ref} from 'vue';
 import { api } from 'boot/axios'
 import { useQuasar } from 'quasar'
 import { onMounted, onUpdated} from 'vue'
 import { formatDistance} from 'date-fns'
+
 
 export default {
     name: 'Inbox',
@@ -74,6 +75,7 @@ export default {
 
     },
 
+   
 
     setup(){
     const $q = useQuasar()
@@ -82,6 +84,8 @@ export default {
     const tab = ref('flooding')
     const pos = ref([])
     const posTags = ref([])
+    const socket = io ('localhost:8082',{upgrade:false})
+   
 
     function datePassed(time) {
       console.log(Date.parse(time))
@@ -101,7 +105,6 @@ export default {
     })
       .then((response) => {
         data.value = response.data
-        
         for (let i of data.value) {  /* unshift() function adds items to the start of an array. */
              pos.value.unshift(i.post)  
              posTags.value.unshift(i.post.tags)
@@ -135,6 +138,46 @@ export default {
       console.log(pos.value)  
 
    }
+
+   
+  socket.on("connect", () =>{
+        
+  })
+
+  function getRooms(){
+    
+        api.get('http://localhost:8082/users/subscriptions',{
+          method: 'GET',
+          headers: {
+          Authorization:'JWT '+ localStorage.getItem('token'),
+          'Access-Control-Allow-Origin': '*'}
+        })
+
+        .then(response => {
+           for (r in response.data){
+            socket.emit('join', {'room': r, 'userID': 2})
+          }
+        })
+  }
+  getRooms()
+
+
+    socket.on("client_connect",data =>{
+        console.log(data)
+    })
+    
+
+    socket.on("message", data =>{
+        console.log('hello')
+        console.log(data)
+    })
+    
+     socket.on("update",data =>{
+       console.log(data)
+       pos.value.unshift(data.data)
+       posTags.value.unshift(data.data.tags)
+
+    })
     
 
   onMounted(() => {
@@ -143,10 +186,10 @@ export default {
   
   onUpdated(() => {
     deletePost();
+
   })
 
 
-    
 
     return {
       data,
@@ -165,7 +208,4 @@ export default {
 
 </script>
 
-
-<style>
-
-</style>
+<style></style>

@@ -61,7 +61,7 @@ export default defineComponent({
 
     function login(username, password){
     
-      let urrl = "https://swarmnet-prod.herokuapp.com/auth"
+      let urrl = "https://swarmnet-staging.herokuapp.com/auth"
       api.post(urrl, {
         "username": username,
         "password": password
@@ -71,7 +71,7 @@ export default defineComponent({
           localStorage.setItem('token', response.data.access_token)
           console.log( response.data.access_token)
 
-        let urrl = "https://swarmnet-prod.herokuapp.com/users/name"
+        let urrl = "https://swarmnet-staging.herokuapp.com/users/name"
       api.post(urrl, {
         "email": username
       }).then((response) => {

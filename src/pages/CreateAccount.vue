@@ -70,7 +70,7 @@ export default defineComponent({
     function signup(fname, lname, username, password){
       console.log("enter", username, password)
     
-      let urrl = "https://8080-uwidcit-swarmnetbackend-c20l2b6i6kj.ws-us38.gitpod.io/register"
+      let urrl = "https://swarmnet-staging.herokuapp.com/users/name"
       api.post(urrl, {
         "firstname": fname,
         "lastname": lname,  

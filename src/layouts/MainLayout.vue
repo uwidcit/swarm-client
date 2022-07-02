@@ -551,7 +551,7 @@ export default defineComponent({
     
     function loadData () {
       console.log(localStorage.getItem('token'))
-    api.get('https://swarmnet-prod.herokuapp.com/topics',{
+    api.get('https://swarmnet-staging.herokuapp.com/topics',{
   method: 'GET',
   
   headers: {
@@ -585,7 +585,7 @@ export default defineComponent({
       /* create subscription */ 
       console.log("creating sub")  
       console.log("Sub: "+ id)
-      let suburl = "https://swarmnet-prod.herokuapp.com/subscriptions"
+      let suburl = "https://swarmnet-staging.herokuapp.com/subscriptions"
 
         api.post(suburl,{
           topic_id: id,  
@@ -616,7 +616,7 @@ export default defineComponent({
 function test(){
   subList.value.splice(0)
   let found = false
-  let suburl = "https://swarmnet-prod.herokuapp.com/subscriptions"
+  let suburl = "https://swarmnet-staging.herokuapp.com/subscriptions"
 
         api.get(suburl,
           {

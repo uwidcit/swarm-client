@@ -105,7 +105,7 @@ import { formatDistance} from 'date-fns'
       function createNewComment(message){
         console.log("creating new comment")
         console.log(message)
-        api.post("https://swarmnet-prod.herokuapp.com/replies", {
+        api.post("https://swarmnet-staging.herokuapp.com/replies", {
           "topic_id": props.topic,
           "text": message,
           "replyTo": props.id,

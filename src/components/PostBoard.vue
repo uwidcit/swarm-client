@@ -83,6 +83,7 @@
                 stack-label
                 label="Please select tags .."
               />
+          <input type="file" @change="onFileChange">
            
       </div>
         </q-card-actions>
@@ -171,13 +172,33 @@ import {defineComponent, ref, onMounted, onUpdated, watchEffect } from 'vue';
 import { api } from 'boot/axios'
 import { useQuasar } from 'quasar'
 import PostCard from './PostCard.vue';
+import { initializeApp } from 'firebase/app';
+import { getStorage, ref as FireBaseRef, uploadBytes,getDownloadURL} from "firebase/storage";
 const io = require('socket.io-client')
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA8nnLYMObg4RQ0lN1ww3i4KNDzf8dWKbw",
+  authDomain: "finalproject-64099.firebaseapp.com",
+  projectId: "finalproject-64099",
+  storageBucket: "finalproject-64099.appspot.com",
+  messagingSenderId: "409440862463",
+  appId: "1:409440862463:web:508a2505433a3dfc430cca",
+  measurementId: "G-VSZ9258JBR"
+};
+
+const app = initializeApp(firebaseConfig);
+const storage = getStorage(app);
+var file = null
 
 export default defineComponent({
   components: { PostCard },
   name: 'PostBoard',
-
-  props:['tabText'], 
+  methods:{
+    async onFileChange(e){
+      file = e.target.files[0]; 
+    }
+  },
+  props:['tabText','fileRef'],
 
   data() {
     return {
@@ -206,7 +227,7 @@ export default defineComponent({
     /* gets topics to use for q-dialog */
     function loadData () {
     
-    api.get('https://swarmnet-prod.herokuapp.com/topics',{
+    api.get('https://swarmnet-staging.herokuapp.com/topics',{
   method: 'GET',
   
   headers: {
@@ -241,7 +262,7 @@ export default defineComponent({
       if(topic == 0){
       pos.value.splice(0)
       
-      let url = "https://swarmnet-prod.herokuapp.com/posts"
+      let url = "https://swarmnet-staging.herokuapp.com/posts"
           
             api.get(url,{
             method: 'GET',
@@ -279,7 +300,7 @@ export default defineComponent({
       
       else{
 
-      let url = "https://swarmnet-prod.herokuapp.com/posts"
+      let url = "https://swarmnet-staging.herokuapp.com/posts"
       api.get(url,{
       method: 'GET',
       headers: {
@@ -324,7 +345,7 @@ export default defineComponent({
     
     /* displays all post after user logins in */
     function displayAllPost(){
-          let curl = "https://swarmnet-prod.herokuapp.com/replies"
+          let curl = "https://swarmnet-staging.herokuapp.com/replies"
             api.get(curl,{
             method: 'GET',
             
@@ -348,7 +369,7 @@ export default defineComponent({
               })
             })
       
-          let url = "https://swarmnet-prod.herokuapp.com/posts"
+          let url = "https://swarmnet-staging.herokuapp.com/posts"
           
             api.get(url,{
             method: 'GET',
@@ -386,7 +407,7 @@ export default defineComponent({
     /*get all top level post with a partciular tag*/
     function searchByTags(searchTag){
    
-      let url = `https://swarmnet-prod.herokuapp.com/posts/${searchTag}`
+      let url = `https://swarmnet-staging.herokuapp.com/posts/${searchTag}`
       console.log(url)
             api.get(url,{
             method: 'GET',
@@ -427,7 +448,7 @@ export default defineComponent({
   /* toggles subscription status */
     function  toggleSub() {
       console.log()
-       let url = `https://swarmnet-prod.herokuapp.com/subscriptions/topic/${props.tabText}`
+       let url = `https://swarmnet-staging.herokuapp.com/subscriptions/topic/${props.tabText}`
           
             api.get(url,
               {
@@ -443,7 +464,7 @@ export default defineComponent({
               console.log("subid is: " + data.value.id)
               
               /* toogle subscription status */
-                api.put(`https://swarmnet-prod.herokuapp.com/subscriptions/${data.value.id}/status`,
+                api.put(`https://swarmnet-staging.herokuapp.com/subscriptions/${data.value.id}/status`,
                        {}, 
                 {
                 headers: {
@@ -490,7 +511,7 @@ export default defineComponent({
   /*shows subscription status */
     function displaySub(){
 
-       let url = `https://swarmnet-prod.herokuapp.com/subscriptions/topic/${props.tabText}`
+       let url = `https://swarmnet-staging.herokuapp.com/subscriptions/topic/${props.tabText}`
           
             api.get(url,
               {
@@ -525,10 +546,11 @@ export default defineComponent({
               })
             }) 
       
-    }      
+    }
+    
     
     /* creates new post using q-dialog*/ 
-    function postPost(text, tags){
+    async function postPost(text, tags){
      /* const socket = io("https://8080-uwidcit-swarmnetbackend-c20l2b6i6kj.ws-us39a.gitpod.io/");
       let room = "Fire";
       socket.emit('post', room, text); */
@@ -539,13 +561,27 @@ export default defineComponent({
       let currDate = new Date()
       console.log(currDate.toISOString())
 
-      let url = "https://swarmnet-prod.herokuapp.com/posts"
-          
+      let url = "https://swarmnet-staging.herokuapp.com/posts"
+      let media_dict = {}
+        if (file != null){        
+          const pathref = FireBaseRef(storage, `swarmnet-staging-images/1/${file.name}`)
+          const snap = await uploadBytes(pathref,file,{contentType: `image/${file.name}`})
+          const media_url = await getDownloadURL(snap.ref)
+
+          media_dict = {
+            'filename': file.name,
+            'url' : media_url
+          }
+
+          console.log(url)
+        }
+
             api.post(url,{
               topic_id: ptopid.value,  
               text: text,
               tags: tags,
-              composed: "2022-01-01T14:48:00Z"
+              composed: "2022-01-01T14:48:00Z",
+              media: media_dict
               },
               {
                 headers: {
@@ -575,7 +611,7 @@ export default defineComponent({
   
   /* gets all post tags */
   function getPostTags(){
-    api.get("https://swarmnet-prod.herokuapp.com/tags",{
+    api.get("https://swarmnet-staging.herokuapp.com/tags",{
         headers: {
           Authorization:'JWT '+ localStorage.getItem('token'),
           'Access-Control-Allow-Origin': '*' 
@@ -606,7 +642,7 @@ export default defineComponent({
     if(props.tabText == 0){
       pos.value.splice(0)
       
-      let url = "https://swarmnet-prod.herokuapp.com/posts"
+      let url = "https://swarmnet-staging.herokuapp.com/posts"
           
             api.get(url,{
             method: 'GET',
@@ -641,7 +677,7 @@ export default defineComponent({
     }
     else{
       pos.value.splice(0)
-      let url = "https://swarmnet-prod.herokuapp.com/posts"
+      let url = "https://swarmnet-staging.herokuapp.com/posts"
       api.get(url,{
       method: 'GET',
       headers: {
@@ -730,6 +766,7 @@ export default defineComponent({
         dense: ref(false),
         tab,
         qmodel: ref(null),
+        fileRef: ref([]),
         filterOptions,
 
         createValue (val, done) {

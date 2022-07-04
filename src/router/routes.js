@@ -53,6 +53,15 @@ const routes = [
       path: '/createaccount',
       component: () => import('pages/CreateAccount.vue')
     },
+
+    {path:'/forgetpassword',
+    component: () => import('pages/ForgetPassword.vue'),
+        
+    },
+    {
+      path:'/resetpassword/:id/:secretkey', component: () => import('pages/ResetPassword.vue')
+    },
+
     
   ]
   

@@ -12,7 +12,9 @@
 
         <q-item-section>
           <q-item-label> <strong> {{title}} </strong></q-item-label>
-
+          <q-img v-for="m in media" :key="m.id" :src = "m.urlPath">  
+            
+          </q-img>
           <div class="row no-wrap items-center bg-grey-3 rounded-borders">
             <q-chip square color="purple-2" text-color="white" icon="sell" size="md"
                           v-for="tags in postTags" 
@@ -98,6 +100,7 @@ export default defineComponent({
       const route = useRoute()
       const $q = useQuasar()
       const data = ref(null)
+      const media = ref([])
       const posts = ref([])
       const title = ref("")
       const comm = ref([])
@@ -126,8 +129,11 @@ export default defineComponent({
                 }
             })
           .then((response) => {
+
             data.value = response.data
+            console.log(data.value)
             tId.value = data.value.topicId
+            media.value = data.value.media
             posts.value.push(data.value) 
             date.value = datePassed(posts.value[0].created)
             title.value = posts.value[0].text
@@ -239,6 +245,7 @@ export default defineComponent({
         date,
         data, 
         loadPosts,
+        media,
         posts,
         title,
         comm,

@@ -13,11 +13,11 @@
       <div class="q-pa-md">
         <div class="row">
           <div class="col">
+            <q-item-section class="col-4 text-h6"> {{ data.user.name }}</q-item-section>
             <q-avatar>
               <img src="https://cdn.quasar.dev/img/boy-avatar.png">
-            </q-avatar>
+            </q-avatar>         
           </div>
-
           <div class="col-9 text-h6">
            {{ data.text }}
           </div>

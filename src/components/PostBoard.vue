@@ -83,7 +83,7 @@
                 stack-label
                 label="Please select tags .."
               />
-          <input type="file" @change="onFileChange">
+          <input type="file" @change="onFileChange" multiple="multiple">
            
       </div>
         </q-card-actions>
@@ -92,7 +92,7 @@
 
         <q-card-actions align="right">
           <q-btn flat label="Discard" color="primary" @click="text = '', qmodel=null" v-close-popup />
-          <q-btn flat label="Post" color="primary" v-close-popup @click="postPost(text, qmodel); text = '';"/>
+          <q-btn flat label="Post" color="primary" v-close-popup @click="check_empty(text, qmodel); text = '';"/>
         </q-card-actions>
 
       </q-card>
@@ -195,7 +195,9 @@ export default defineComponent({
   name: 'PostBoard',
   methods:{
     async onFileChange(e){
-      file = e.target.files[0]; 
+      file = e.target.files;
+      let ext = file[0].name
+      console.log(ext) 
     }
   },
   props:['tabText','fileRef'],
@@ -470,6 +472,8 @@ export default defineComponent({
                 headers: {
                   Authorization:'JWT '+ localStorage.getItem('token'),
                   'Access-Control-Allow-Origin': '*',
+                  "Access-Control-Allow-Methods": "DELETE, POST, GET, OPTIONS",
+                 "Access-Control-Allow-Headers" : "Content-Type, Authorization, X-Requested-With",
                   'Content-Type': 'application/json'
                 }
               })
@@ -547,10 +551,33 @@ export default defineComponent({
             }) 
       
     }
+
+    async function check_empty(text, qmodel){
+      let media_list = []
+
+      if (file != null){
+        media_list = await uploadFiles()
+      }
+      postPost(text, qmodel,media_list)
+    }
     
+    async function uploadFiles(){
+       let media_dict = []
+        for (let f of file){
+            let pathref = FireBaseRef(storage, `swarmnet-staging-images/1/${f.name}`)
+            let snap = await uploadBytes(pathref,f,{contentType: `image/${f.name}`})
+            let media_url = await getDownloadURL(snap.ref)
+            let file_dict = {
+              'filename': f.name,
+              'url' : media_url
+              }
+           media_dict.push(file_dict) 
+        }
+        return media_dict
+    }
     
     /* creates new post using q-dialog*/ 
-    async function postPost(text, tags){
+    async function postPost(text, tags,media_list){
      /* const socket = io("https://8080-uwidcit-swarmnetbackend-c20l2b6i6kj.ws-us39a.gitpod.io/");
       let room = "Fire";
       socket.emit('post', room, text); */
@@ -560,34 +587,19 @@ export default defineComponent({
       }
       let currDate = new Date()
       console.log(currDate.toISOString())
-
-      let url = "https://swarmnet-staging.herokuapp.com/posts"
-      let media_dict = {}
-        if (file != null){        
-          const pathref = FireBaseRef(storage, `swarmnet-staging-images/1/${file.name}`)
-          const snap = await uploadBytes(pathref,file,{contentType: `image/${file.name}`})
-          const media_url = await getDownloadURL(snap.ref)
-
-          media_dict = {
-            'filename': file.name,
-            'url' : media_url
-          }
-
-          console.log(url)
-        }
-
-            api.post(url,{
+      console.log(media_list)
+      let url = "https://swarmnet-staging.herokuapp.com/posts"     
+              api.post(url,{
               topic_id: ptopid.value,  
               text: text,
               tags: tags,
               composed: "2022-01-01T14:48:00Z",
-              media: media_dict
+              media: media_list
               },
               {
                 headers: {
                   Authorization:'JWT '+ localStorage.getItem('token'),
-                  'Access-Control-Allow-Origin': '*'
-                  
+                  'Access-Control-Allow-Origin': '*',
                 }
               }
               )
@@ -606,9 +618,12 @@ export default defineComponent({
                 message: 'Loading failed',
                 icon: 'report_problem'
               })
-            })  
+            })
+              
     }  
-  
+  function getExtenstion(filename){
+    return filename.split('.')[1]
+  }
   /* gets all post tags */
   function getPostTags(){
     api.get("https://swarmnet-staging.herokuapp.com/tags",{
@@ -754,6 +769,7 @@ export default defineComponent({
         getDetails,
         ptabtext,
         postPost,
+        check_empty,
         ptopid,
         getPostTags,
         options,

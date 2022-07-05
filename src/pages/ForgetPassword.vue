@@ -58,15 +58,25 @@ export default defineComponent({
         let url = "https://swarmnet-staging.herokuapp.com/resetPassword"
         console.log(username)
         if (username === vusername){
-            api.post(url, { 
-            'email': username
-            },
+            api.post(url, {'email': username},
             {
                 method: 'POST',
                 headers: {'Access-Control-Allow-Origin': '*'}
-            })
-            .then((response) => {
+            }).then((response) => {
+                if(response.status == 200){
+                    $q.notify({
+                        color:'POSTIVE',
+                        position: 'top',
+                        message: 'Reset email sent to account '+username
+                    }) 
+                }                    
                 console.log(response.status)
+            }).catch(() => {
+                  $q.notify({
+                        type:'NEGATIVE',
+                        position: 'top',
+                        message: response.message
+                    }) 
             })
         }
       

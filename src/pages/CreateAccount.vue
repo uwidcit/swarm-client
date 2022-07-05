@@ -36,7 +36,7 @@
                             <q-input :loading="loading[0]" @click.prevent.self @click="simulateProgress(0,fname, lname, username,password)"   type="submit"  no-caps flat />
                         </p>
                         <p>
-                            <a href="">Forget password?</a>
+                            <a href="/forgetpassword">Forget password?</a>
                         </p>
 
                     </form>

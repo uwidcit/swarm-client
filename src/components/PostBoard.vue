@@ -83,7 +83,7 @@
                 stack-label
                 label="Please select tags .."
               />
-          <input type="file" @change="onFileChange" multiple="multiple">
+          <input type="file" @change="onFileChange" multiple="multiple" name="file" accept="image/jpg,image/gif,image/png,image/jpeg,audio/mp3,video/mp4">>
            
       </div>
         </q-card-actions>
@@ -172,22 +172,8 @@ import {defineComponent, ref, onMounted, onUpdated, watchEffect } from 'vue';
 import { api } from 'boot/axios'
 import { useQuasar } from 'quasar'
 import PostCard from './PostCard.vue';
-import { initializeApp } from 'firebase/app';
-import { getStorage, ref as FireBaseRef, uploadBytes,getDownloadURL} from "firebase/storage";
 const io = require('socket.io-client')
 
-const firebaseConfig = {
-  apiKey: "AIzaSyA8nnLYMObg4RQ0lN1ww3i4KNDzf8dWKbw",
-  authDomain: "finalproject-64099.firebaseapp.com",
-  projectId: "finalproject-64099",
-  storageBucket: "finalproject-64099.appspot.com",
-  messagingSenderId: "409440862463",
-  appId: "1:409440862463:web:508a2505433a3dfc430cca",
-  measurementId: "G-VSZ9258JBR"
-};
-
-const app = initializeApp(firebaseConfig);
-const storage = getStorage(app);
 var file = null
 
 export default defineComponent({
@@ -226,6 +212,7 @@ export default defineComponent({
     const topicInfo = ref('')
     const filterOptions = ref(options)
 
+    let media_list = []
     /* gets topics to use for q-dialog */
     function loadData () {
     
@@ -553,27 +540,34 @@ export default defineComponent({
     }
 
     async function check_empty(text, qmodel){
-      let media_list = []
-
       if (file != null){
-        media_list = await uploadFiles()
+        await uploadFiles()
+        .then((response) => {
+          postPost(text, qmodel,response)
+         })
       }
-      postPost(text, qmodel,media_list)
+      else{
+        postPost(text, qmodel,[])
+      }
     }
     
     async function uploadFiles(){
-       let media_dict = []
-        for (let f of file){
-            let pathref = FireBaseRef(storage, `swarmnet-staging-images/1/${f.name}`)
-            let snap = await uploadBytes(pathref,f,{contentType: `image/${f.name}`})
-            let media_url = await getDownloadURL(snap.ref)
-            let file_dict = {
-              'filename': f.name,
-              'url' : media_url
-              }
-           media_dict.push(file_dict) 
+        var send_data = new FormData()
+        for( let f of file ){
+           send_data.append("file",f)
         }
-        return media_dict
+       
+        let api_request = await api.post('https://swarmnet-staging.herokuapp.com/posts/upload',send_data,{
+                headers: {
+                  Authorization:'JWT '+ localStorage.getItem('token'),
+                  'Access-Control-Allow-Origin': '*',
+                  'content-type':'multipart/form-data'
+                }
+              })
+            let api_response = await api_request
+            if (api_response.status == 200){
+                    return api_response.data
+                }
     }
     
     /* creates new post using q-dialog*/ 
@@ -621,9 +615,7 @@ export default defineComponent({
             })
               
     }  
-  function getExtenstion(filename){
-    return filename.split('.')[1]
-  }
+
   /* gets all post tags */
   function getPostTags(){
     api.get("https://swarmnet-staging.herokuapp.com/tags",{

@@ -56,7 +56,6 @@ export default defineComponent({
     
     function resetRequest(username, vusername){
         let url = "https://swarmnet-staging.herokuapp.com/resetPassword"
-        console.log(username)
         if (username === vusername){
             api.post(url, {'email': username},
             {
@@ -69,14 +68,18 @@ export default defineComponent({
                         position: 'top',
                         message: 'Reset email sent to account '+username
                     }) 
+                    const redirectPath = route.query.redirect || '/login'
+                    router.push(redirectPath)
                 }                    
-                console.log(response.status)
-            }).catch(() => {
-                  $q.notify({
-                        type:'NEGATIVE',
+                
+            }).catch((response) => {
+                    $q.notify({
+                        type:'negative',
                         position: 'top',
-                        message: response.message
+                        message: `An error occured or the account doesn't exist `,
+                        icon: 'report_problem'
                     }) 
+                  
             })
         }
       

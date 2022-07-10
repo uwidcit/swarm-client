@@ -68,7 +68,7 @@ export default defineComponent({
                         position: 'top',
                         message: 'Reset email sent to account '+username
                     }) 
-                    const redirectPath = route.query.redirect || '/login'
+                    const redirectPath = route.query.redirect || '/'
                     router.push(redirectPath)
                 }                    
                 

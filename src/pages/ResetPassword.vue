@@ -66,7 +66,23 @@ export default defineComponent({
                 headers: {'Access-Control-Allow-Origin': '*'}
             })
             .then((response) => {
-                console.log(response.status)
+               if(response.status == 201){
+                $q.notify({
+                        color:'POSTIVE',
+                        position: 'top',
+                        message: 'Password successfully changes redirecting to login '
+                    }) 
+                    const redirectPath = route.query.redirect || '/'
+                    router.push(redirectPath)
+               }
+            }).catch((response) => {
+                    $q.notify({
+                        type:'negative',
+                        position: 'top',
+                        message: `An error occured`,
+                        icon: 'report_problem'
+                    }) 
+                  
             })
         }
       

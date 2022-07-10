@@ -585,7 +585,7 @@ export default defineComponent({
       /* create subscription */ 
       console.log("creating sub")  
       console.log("Sub: "+ id)
-      let suburl = "https://swarmnet-staging.herokuapp.com/subscriptions/all"
+      let suburl = "https://swarmnet-staging.herokuapp.com/subscriptions"
 
         api.post(suburl,{
           topic_id: id,  

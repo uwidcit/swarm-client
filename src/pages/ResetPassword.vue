@@ -88,7 +88,6 @@ export default defineComponent({
       
     }
     function simulateProgress (number, username,vusername) {
-        console.log("enter", number, username,vusername)
       // we set loading state
       loading.value[ number ] = true
 

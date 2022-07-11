@@ -84,7 +84,7 @@ export default {
     const tab = ref('flooding')
     const pos = ref([])
     const posTags = ref([])
-    const socket = io ('https://swarmnet-staging.herokuapp.com',{upgrade:false})
+    const socket = io ('https://swarmnet-staging.herokuapp.com',{transports: ['websocket'],upgrade:true})
    
 
     function datePassed(time) {

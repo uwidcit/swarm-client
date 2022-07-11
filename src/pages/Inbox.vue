@@ -84,7 +84,7 @@ export default {
     const tab = ref('flooding')
     const pos = ref([])
     const posTags = ref([])
-    const socket = io ('localhost:8082',{upgrade:false})
+    const socket = io ('https://swarmnet-staging.herokuapp.com',{transports: ['websocket'],upgrade:true})
    
 
     function datePassed(time) {
@@ -94,7 +94,7 @@ export default {
     }
 
     function loadData () {
-    api.get('https://swarmnet-prod.herokuapp.com/inbox',{
+    api.get('https://swarmnet-staging.herokuapp.com/inbox',{
   method: 'GET',
   
   headers: {
@@ -146,7 +146,7 @@ export default {
 
   function getRooms(){
     
-        api.get('http://localhost:8082/users/subscriptions',{
+        api.get('https://swarmnet-staging.herokuapp.com/users/subscriptions',{
           method: 'GET',
           headers: {
           Authorization:'JWT '+ localStorage.getItem('token'),
@@ -154,8 +154,9 @@ export default {
         })
 
         .then(response => {
-           for (r in response.data){
-            socket.emit('join', {'room': r, 'userID': 2})
+          
+           for (let r of response.data){
+            socket.emit('join', {'room': r.topicId.toString(), 'userID': '2'})
           }
         })
   }

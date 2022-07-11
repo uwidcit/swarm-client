@@ -1,5 +1,14 @@
 {
   "projects": {
-    "default": "swarmnet-client"
+    "default": "finalproject-64099"
+  },
+  "targets": {
+    "finalproject-64099": {
+      "hosting": {
+        "staging": [
+          "swarm-net-staging"
+        ]
+      }
+    }
   }
 }

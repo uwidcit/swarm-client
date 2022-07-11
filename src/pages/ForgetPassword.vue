@@ -1,5 +1,5 @@
 <template>
-  <q-layout>
+     <q-layout>
     <q-page-container>
       <q-page class="flex bg-image flex-center">
         <div class="wrapper login">
@@ -7,50 +7,38 @@
             <div class="col-left">
                 <div class="login-text">
                     <h2>SWARM NET</h2>
-                    <p>Login.<br>Stay updated about diasters.</p>
+                    <p>Forget Password.<br>Stay updated about diasters.</p>
                     <a href="/" class="btn" >Login</a>
                 </div>
             </div>
 
             <div class="col-right">
                 <div class="login-form">
-                    <h2>Create Account</h2>
+                    <h2>Forget password</h2>
                     <form action="">
-                         <p>
-                            <label>Firstname<span>*</span></label>
-                            <input v-model="fname" type="text" placeholder="Firstname" required>
-                        </p>
-                         <p>
-                            <label>Lastname<span>*</span></label>
-                            <input v-model="lname" type="text" placeholder="Lastname" required>
-                        </p>
-                        <p>
-                            <label>Username or email address<span>*</span></label>
-                            <input v-model="username" type="text" placeholder="Username or Email" required>
-                        </p>
-                        <p>
-                            <label>Password<span>*</span></label>
-                            <input v-model="password" type="password" placeholder="Password" required>
-                        </p>
-                        <p>
-                            <q-input :loading="loading[0]" @click.prevent.self @click="simulateProgress(0,fname, lname, username,password)"   type="submit"  no-caps flat />
-                        </p>
-                        <p>
-                            <a href="/forgetpassword">Forget password?</a>
-                        </p>
-
+                    <p>Enter the email address associated with the account and we'll send you a password recovery email </p>
+                    <p>
+                            <label>Email<span>*</span></label>
+                            <input v-model="email" type="text" placeholder="example@mail.com" required>
+                    </p>
+                     <p>
+                            <label>Verify Email<span>*</span></label>
+                            <input v-model="vemail" type="text" placeholder="example@mail.com" required>
+                    </p>
+                     <p>
+                            <q-input :loading="loading[0]" @click.prevent.self @click="simulateProgress(0,email,vemail)"   type="submit"  no-caps flat />
+                    </p>
+                    <a href="/createaccount"> <p> Don't have an account create one here </p> </a>    
                     </form>
                 </div>
             </div>
-
+           
         </div>
     </div>
       </q-page>
     </q-page-container>
   </q-layout>
-  
 </template>
-
 <script>
 import {defineComponent} from 'vue'
 import {ref} from 'vue'
@@ -59,52 +47,44 @@ import { useQuasar } from 'quasar'
 import { onMounted, onUpdated} from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
-
 export default defineComponent({
-  setup() {
+    setup() {
     const $q = useQuasar()
     const router = useRouter()
     const route = useRoute()
     const loading = ref([false])
-
-    function signup(fname, lname, username, password){
-      console.log("enter", username, password)
     
-      let urrl = "https://swarmnet-staging.herokuapp.com/users/name"
-      api.post(urrl, {
-        "firstname": fname,
-        "lastname": lname,  
-        "username": username,
-        "password": password
-      },
-        {
-            method: 'POST',
-            
-            headers: {
-                    'Access-Control-Allow-Origin': '*',
-                    }
-
-        }
+    function resetRequest(username, vusername){
+        let url = "https://swarmnet-staging.herokuapp.com/resetPassword"
+        if (username === vusername){
+            api.post(url, {'email': username},
+            {
+                method: 'POST',
+                headers: {'Access-Control-Allow-Origin': '*'}
+            }).then((response) => {
+                if(response.status == 200){
+                    $q.notify({
+                        color:'POSTIVE',
+                        position: 'top',
+                        message: 'Reset email sent to account '+username
+                    }) 
+                    const redirectPath = route.query.redirect || '/'
+                    router.push(redirectPath)
+                }                    
                 
-            ).then((response) => {
-
-        if(response.status == 201){
-          const redirectPath = route.query.redirect || '/'
-          router.push(redirectPath)
-        }     
-    })
-          .catch(() => {
-            $q.notify({
-              color: 'negative',
-              position: 'top',
-              message: 'Error creating account',
-              icon: 'report_problem'
+            }).catch((response) => {
+                    $q.notify({
+                        type:'negative',
+                        position: 'top',
+                        message: `An error occured or the account doesn't exist `,
+                        icon: 'report_problem'
+                    }) 
+                  
             })
-          }) 
-  }
-  
-     function simulateProgress (number,fname, lname, username,password) {
-        console.log("enter", fname, lname, username, password)
+        }
+      
+    }
+    function simulateProgress (number, username,vusername) {
       // we set loading state
       loading.value[ number ] = true
 
@@ -112,21 +92,20 @@ export default defineComponent({
       setTimeout(() => {
         // we're done, we reset loading state
         loading.value[ number ] = false
-        signup(fname, lname, username,password)
+        resetRequest(username,vusername)
       }, 3000) 
     }
 
-
-    return {
-      signup,
-      fname: ref(''),
-      lname: ref(''),
-      username: ref(''),
-      password: ref(''),
-      loading,
-      simulateProgress
+     return {
+        loading,
+        email: ref(''),
+        vemail: ref(''),
+        username: ref(''),
+        vusername:ref(''),
+        simulateProgress
     }
-  },
+    },
+   
 })
 </script>
 

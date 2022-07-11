@@ -623,7 +623,7 @@ export default defineComponent({
 function test(){
   subList.value.splice(0)
   let found = false
-  let suburl = "https://swarmnet-staging.herokuapp.com/subscriptions"
+  let suburl = "https://swarmnet-staging.herokuapp.com/subscriptions/all"
 
         api.get(suburl,
           {

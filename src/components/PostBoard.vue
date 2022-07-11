@@ -573,7 +573,10 @@ export default defineComponent({
             'url' : media_url
           }
 
-          console.log(url)
+          //console.log(file.name,"This is it 1")
+          //console.log(url,"This is it 2")
+          //console.log(filename,"This is it 3")
+
         }
 
             api.post(url,{

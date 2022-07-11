@@ -52,6 +52,7 @@
 
       <div class="q-gutter-sm row items-center no-wrap ">
          <alerts> </alerts>
+         <q-btn stretch flat @click="logout"> Logout</q-btn>
           <q-btn round dense flat color="white" icon="notifications"  >
             <q-badge color="red" text-color="white" floating>
               5
@@ -528,6 +529,12 @@ export default defineComponent({
         y: this.dialogPos.y + evt.delta.y
       }
     },
+    logout () {
+      
+      console.log("logout")
+      localStorage.clear();
+      this.$router.push({ path: '/' })
+    }
 
   },
 

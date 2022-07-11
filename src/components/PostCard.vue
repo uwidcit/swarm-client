@@ -20,6 +20,46 @@
 
           <div class="col-9 text-h6">
            {{ data.text }}
+           <div v-if="data.media.length != 0">      
+            <q-carousel
+              animated
+              swipeable
+              navigation
+              v-model="slide"
+              arrows
+              infinite
+              v-model:fullscreen="fullscreen"
+              >
+              <q-carousel-slide v-for="m in data.media" :key="m.id" :name="1" :img-src="m.urlPath" >
+              <div class="text-subtitle1">{{ m.filename }}</div>
+               </q-carousel-slide>
+               <!-- v-for="m in data.media" :key="m.id" 
+               <q-carousel-slide :name="m.id" img-src="{{m.url}}" />-->
+
+               <!--<q-carousel-slide :name="2" img-src="https://cdn.quasar.dev/img/mountains.jpg" />
+               <q-carousel-slide :name="3" img-src="https://cdn.quasar.dev/img/parallax1.jpg" />
+               <q-carousel-slide :name="1" img-src="https://placeimg.com/500/300/nature" /> Example test   v-for="m in data.media" :key="m.id" -->
+
+               <template v-slot:control>
+                <q-carousel-control
+                  position="bottom-right"
+                  :offset="[18, 18]"
+                >
+                  <q-btn
+                    push round dense color="white" text-color="primary"
+                    :icon="fullscreen ? 'fullscreen_exit' : 'fullscreen'"
+                    @click="fullscreen = !fullscreen"
+                  />
+                </q-carousel-control>
+              </template>
+            </q-carousel>
+           </div>
+
+
+          <!-- <q-img
+          src="https://placeimg.com/500/300/nature"
+          :ratio="16/9"
+        /> place image in post example-->
           </div>
         </div>
         </div>
@@ -49,7 +89,7 @@
 <script>
 import {defineComponent} from 'vue'
 import { formatDistance} from 'date-fns'
-
+import { ref } from 'vue'
 export default defineComponent({
   name: "CardProduct",
 
@@ -58,14 +98,23 @@ export default defineComponent({
  
   setup(props) {
     const value = Date.now()
+    let start = props.data.media[0]
+    let test ="https://cdn.quasar.dev/img/mountains.jpg"
+    if (start!=null){
+      console.log(start.urlPath)
+    }
+    //console.log(start['filename'])
+    //console.log(props.data.media[0])
     function datePassed() {
     //  console.log(Date.parse(props.data.created))
+    
+  
     //  console.log(formatDistance(Date.parse(props.data.created), new Date(), { addSuffix: true }))
         return formatDistance(Date.parse(props.data.created), new Date(), { addSuffix: true })
     }
 
     return{
-      datePassed,
+      datePassed,slide: ref(1),fullscreen: ref(false), start
     }
   }
 })
